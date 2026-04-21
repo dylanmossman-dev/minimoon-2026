@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dylan & Meggie · Minimoon 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --navy:#1B2A4A; --navy-light:#2d4070; --gold:#C8A96E; --gold-light:#e8cfa0;
+      --blush:#E8C4C4; --blush-light:#f5e8e8; --ivory:#FAFAF7; --white:#fff;
+      --text:#2C2C2C; --text-muted:#8a8a8a; --text-light:#b0b0b0;
+      --sage:#6B9E6B; --sage-light:#e8f3e8; --amber:#D97706; --amber-light:#fef3c7;
+      --border:#E8E4DF; --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+      --shadow:0 4px 16px rgba(27,42,74,.10); --shadow-lg:0 8px 32px rgba(27,42,74,.15);
+      --radius:12px; --radius-lg:20px; --nav-height:68px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px;-webkit-text-size-adjust:100%}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--ivory);color:var(--text);min-height:100vh;overflow-x:hidden}
+    button{cursor:pointer;border:none;background:none;font-family:inherit}
+    input,textarea,select{font-family:inherit}
+    a{color:inherit;text-decoration:none}
+
+    /* SCREENS */
+    .screen{display:none;min-height:100vh}
+    .screen.active{display:flex;flex-direction:column}
+
+    /* SETUP */
+    #setup-screen{background:linear-gradient(135deg,var(--navy) 0%,#2d4a7a 100%);color:#fff;align-items:center;justify-content:center;padding:24px}
+    .setup-card{background:#fff;border-radius:var(--radius-lg);padding:40px 32px;max-width:520px;width:100%;color:var(--text);box-shadow:var(--shadow-lg)}
+    .setup-logo{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--navy);text-align:center;margin-bottom:4px}
+    .setup-sub{text-align:center;color:var(--text-muted);font-size:.9rem;margin-bottom:32px}
+    .setup-step{display:flex;gap:16px;margin-bottom:24px;align-items:flex-start}
+    .step-num{min-width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+    .step-content h4{font-size:.95rem;font-weight:600;margin-bottom:4px}
+    .step-content p{font-size:.85rem;color:var(--text-muted);line-height:1.5}
+    .step-content a{color:var(--navy);text-decoration:underline}
+    .setup-divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+    .setup-form h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:16px;color:var(--navy)}
+    .form-row{margin-bottom:14px}
+    .form-row label{display:block;font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+    .form-row input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;background:var(--ivory)}
+    .form-row input:focus{outline:none;border-color:var(--navy)}
+    .btn-primary{width:100%;padding:13px;background:var(--navy);color:#fff;border-radius:10px;font-size:.95rem;font-weight:600;letter-spacing:.01em}
+    .btn-primary:hover{background:var(--navy-light)}
+    .btn-secondary{width:100%;padding:11px;background:transparent;color:var(--text-muted);border:1.5px solid var(--border);border-radius:10px;font-size:.9rem;font-weight:500;margin-top:10px}
+    .btn-secondary:hover{border-color:var(--navy);color:var(--navy)}
+    .form-error{color:#e53e3e;font-size:.82rem;margin-top:8px;display:none}
+    .demo-note{background:var(--amber-light);border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#92400e;margin-top:10px;line-height:1.5}
+
+    /* LOGIN */
+    #login-screen{background:linear-gradient(160deg,var(--navy) 0%,#2d4a7a 50%,#1a3a5c 100%);align-items:center;justify-content:center;padding:24px}
+    .login-hero{text-align:center;margin-bottom:40px}
+    .login-crest{width:72px;height:72px;background:rgba(200,169,110,.2);border:2px solid var(--gold);border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:2rem}
+    .login-title{font-family:'Playfair Display',serif;font-size:2rem;color:#fff;margin-bottom:6px;line-height:1.2}
+    .login-dates{color:var(--gold-light);font-size:.9rem;letter-spacing:.1em;text-transform:uppercase}
+    .login-card{background:#fff;border-radius:var(--radius-lg);padding:36px 32px;max-width:400px;width:100%;box-shadow:var(--shadow-lg)}
+    .login-card h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--navy);margin-bottom:6px}
+    .login-card p{color:var(--text-muted);font-size:.88rem;margin-bottom:28px}
+    .user-select{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+    .user-btn{padding:14px 10px;border:2px solid var(--border);border-radius:var(--radius);text-align:center;transition:all .2s;cursor:pointer}
+    .user-btn:hover,.user-btn.selected{border-color:var(--navy);background:var(--blush-light)}
+    .user-avatar{font-size:1.8rem;margin-bottom:4px}
+    .user-name{font-size:.85rem;font-weight:600;color:var(--navy)}
+
+    /* APP */
+    #app-screen{flex-direction:column;background:var(--ivory);padding-bottom:var(--nav-height)}
+
+    /* TOPBAR */
+    .topbar{background:var(--navy);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .topbar-title{font-family:'Playfair Display',serif;color:#fff;font-size:1.1rem}
+    .topbar-sub{color:var(--gold-light);font-size:.72rem}
+    .topbar-actions{display:flex;align-items:center;gap:10px}
+    .edit-toggle-btn{display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:20px;font-size:.75rem;font-weight:600;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.8);transition:all .2s}
+    .edit-toggle-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+    .edit-toggle-btn:hover{border-color:var(--gold-light)}
+    .user-dot{width:30px;height:30px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:var(--navy);cursor:pointer}
+
+    /* EDIT MODE BANNER */
+    .edit-banner{background:var(--gold);color:var(--navy);padding:8px 16px;font-size:.8rem;font-weight:600;text-align:center;display:none}
+    .edit-banner.visible{display:block}
+
+    /* BOTTOM NAV */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -4px 16px rgba(0,0,0,.06)}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:8px 4px;color:var(--text-light);transition:color .2s;position:relative}
+    .nav-item.active{color:var(--navy)}
+    .nav-item svg{width:22px;height:22px}
+    .nav-label{font-size:.68rem;font-weight:500;letter-spacing:.02em}
+    .nav-badge{position:absolute;top:8px;right:50%;transform:translateX(8px);background:var(--gold);color:var(--navy);border-radius:10px;font-size:.6rem;font-weight:700;padding:1px 5px;min-width:16px;text-align:center}
+
+    /* PAGES */
+    .page{display:none;flex:1;overflow-y:auto}
+    .page.active{display:block}
+    .page-content{padding:20px 16px 8px;max-width:700px;margin:0 auto}
+
+    /* DASHBOARD */
+    .hero-banner{border-radius:var(--radius-lg);margin-bottom:20px;color:#fff;position:relative;overflow:hidden;min-height:260px;background:linear-gradient(135deg,var(--navy) 0%,#2d4a7a 100%);background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end}
+    .hero-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.05) 0%,rgba(10,20,45,.88) 100%);z-index:1}
+    .hero-banner-inner{position:relative;z-index:2;padding:28px 24px}
+    .hero-eyebrow{color:var(--gold-light);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+    .hero-names{font-family:'Playfair Display',serif;font-size:2rem;line-height:1.1;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+    .hero-sub{color:rgba(255,255,255,.8);font-size:.85rem;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+    .hero-counts{display:flex;gap:20px;margin-top:20px}
+    .count-item{text-align:center}
+    .count-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold-light);line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+    .count-label{font-size:.68rem;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+    .hero-location-strip{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .hero-loc-pill{background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 11px;font-size:.72rem;color:rgba(255,255,255,.85);letter-spacing:.04em}
+    .card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:18px 16px;margin-bottom:14px}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted)}
+    .card-action{color:var(--navy);font-size:.8rem;font-weight:600;cursor:pointer}
+    .progress-row{margin-bottom:12px}
+    .progress-label{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:5px}
+    .progress-label span:last-child{color:var(--text-muted)}
+    .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--navy),var(--gold));transition:width .5s ease}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .stat-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:14px 12px;text-align:center}
+    .stat-icon{font-size:1.4rem;margin-bottom:4px}
+    .stat-num{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--navy);font-weight:700;line-height:1}
+    .stat-label{font-size:.72rem;color:var(--text-muted);margin-top:3px}
+    .timeline-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .timeline-item:last-child{border-bottom:none}
+    .tl-dot{width:10px;height:10px;border-radius:50%;background:var(--border);margin-top:5px;flex-shrink:0}
+    .tl-dot.booked{background:var(--sage)}
+    .tl-dot.needs{background:var(--gold)}
+    .tl-info{flex:1}
+    .tl-title{font-size:.88rem;font-weight:500}
+    .tl-date{font-size:.75rem;color:var(--text-muted)}
+    .oc-highlight{background:linear-gradient(135deg,#e8f0ff 0%,#f5f0ff 100%);border:1px solid #c7d7ff;border-radius:var(--radius);padding:16px;margin-bottom:12px}
+    .oc-highlight h4{font-size:.9rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+    .oc-highlight p{font-size:.8rem;color:#4a5568;line-height:1.5}
+    .oc-highlight a{color:var(--navy);font-weight:600;text-decoration:underline}
+
+    /* ITINERARY */
+    .day-tabs{display:flex;gap:8px;overflow-x:auto;padding:14px 16px;scrollbar-width:none;-ms-overflow-style:none;position:sticky;top:0;background:var(--ivory);border-bottom:1px solid var(--border);z-index:10}
+    .day-tabs::-webkit-scrollbar{display:none}
+    .day-tab{min-width:66px;padding:9px 10px;border-radius:10px;text-align:center;cursor:pointer;border:1.5px solid var(--border);background:#fff;transition:all .2s;flex-shrink:0}
+    .day-tab.active{background:var(--navy);border-color:var(--navy);color:#fff}
+    .day-tab-date{font-size:.68rem;opacity:.75}
+    .day-tab-day{font-size:.8rem;font-weight:600;margin-top:1px}
+    .day-tab.active .day-tab-date{opacity:.8}
+    .day-detail{padding:18px 16px;max-width:700px;margin:0 auto}
+    .day-hero{position:relative;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:16px;min-height:190px;background:linear-gradient(135deg,var(--navy) 0%,#2d4a7a 100%);background-size:cover;background-position:center}
+    .day-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.08) 0%,rgba(10,20,45,.87) 100%);z-index:1}
+    .day-hero-content{position:relative;z-index:2;padding:22px 18px;display:flex;flex-direction:column;justify-content:flex-end;min-height:190px}
+    .day-num{color:var(--gold-light);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+    .day-title{font-family:'Playfair Display',serif;font-size:1.45rem;margin:4px 0;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+    .day-location{display:flex;align-items:center;gap:6px;font-size:.82rem;color:rgba(255,255,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .hotel-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(200,169,110,.2);backdrop-filter:blur(4px);border:1px solid rgba(200,169,110,.45);border-radius:20px;padding:4px 11px;font-size:.75rem;color:var(--gold-light);margin-top:10px}
+
+    /* ACTIVITY ITEMS */
+    .activity-item{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:13px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;transition:all .2s}
+    .activity-item:not(.edit-mode):hover{box-shadow:var(--shadow);border-color:rgba(27,42,74,.2)}
+    .activity-item.edit-mode{cursor:default;padding-right:10px}
+    .activity-item.status-booked{border-left:3px solid var(--sage)}
+    .activity-item.status-needs_booking{border-left:3px solid var(--gold)}
+    .activity-item.status-suggestion{border-left:3px solid #CBD5E0}
+    .activity-item.status-auto{border-left:3px solid var(--blush);opacity:.7}
+    .activity-item.status-custom{border-left:3px solid var(--navy-light)}
+    .activity-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer}
+    .activity-check.checked{background:var(--sage);border-color:var(--sage)}
+    .activity-check svg{display:none}
+    .activity-check.checked svg{display:block}
+    .activity-info{flex:1;min-width:0}
+    .activity-title{font-size:.88rem;font-weight:600;margin-bottom:3px}
+    .activity-title.checked{text-decoration:line-through;color:var(--text-muted)}
+    .activity-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .activity-time{font-size:.73rem;color:var(--text-muted)}
+    .activity-type{font-size:.67rem;font-weight:600;padding:2px 7px;border-radius:10px}
+    .type-dining{background:#fff0e8;color:#c05621}
+    .type-hotel{background:#e8f0ff;color:#2b4fbd}
+    .type-relaxation{background:var(--blush-light);color:#9d4a4a}
+    .type-entertainment{background:#f3e8ff;color:#6b21a8}
+    .type-sightseeing{background:var(--sage-light);color:#3d6b3d}
+    .type-adventure{background:#fff8e8;color:#b45309}
+    .type-nightlife{background:#1B2A4A15;color:var(--navy)}
+    .type-custom{background:#f0f4ff;color:var(--navy-light)}
+    .activity-notes{font-size:.77rem;color:var(--text-muted);margin-top:4px;line-height:1.4}
+    .activity-who{font-size:.7rem;color:var(--sage);font-weight:600;margin-top:3px}
+
+    /* EDIT CONTROLS */
+    .edit-controls{display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;padding-left:4px}
+    .ec-btn{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:all .15s;border:1.5px solid var(--border);background:var(--ivory);color:var(--text-muted)}
+    .ec-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .ec-btn.danger:hover{background:#e53e3e;border-color:#e53e3e;color:#fff}
+    .ec-add-btn{width:100%;margin-top:6px;padding:10px;border:1.5px dashed var(--border);border-radius:var(--radius);font-size:.82rem;color:var(--text-muted);background:transparent;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+    .ec-add-btn:hover{border-color:var(--navy);color:var(--navy);background:#f0f4ff}
+
+    /* IF TIME PERMITS */
+    .bonus-section{margin-top:16px}
+    .bonus-toggle{width:100%;padding:11px 14px;border-radius:var(--radius);border:1.5px dashed var(--border);background:transparent;display:flex;align-items:center;justify-content:space-between;font-size:.82rem;color:var(--text-muted);font-weight:500;transition:all .2s;cursor:pointer}
+    .bonus-toggle:hover{border-color:var(--gold);color:var(--navy)}
+    .bonus-toggle.open{border-color:var(--gold);background:rgba(200,169,110,.05);color:var(--navy)}
+    .bonus-toggle .chevron{transition:transform .2s}
+    .bonus-toggle.open .chevron{transform:rotate(180deg)}
+    .bonus-items{display:none;margin-top:8px;gap:8px;flex-direction:column}
+    .bonus-items.open{display:flex}
+    .bonus-item{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+    .bonus-icon{font-size:1.3rem;flex-shrink:0;margin-top:1px}
+    .bonus-info{flex:1}
+    .bonus-name{font-size:.87rem;font-weight:600;color:var(--navy)}
+    .bonus-desc{font-size:.77rem;color:var(--text-muted);margin-top:2px;line-height:1.4}
+    .bonus-add-btn{font-size:.72rem;font-weight:600;color:var(--navy);background:#f0f4ff;border:none;border-radius:20px;padding:3px 10px;cursor:pointer;margin-top:5px;display:inline-block;transition:background .15s}
+    .bonus-add-btn:hover{background:#dbeafe}
+
+    /* BOOKINGS */
+    .section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin:20px 0 10px}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+    .booking-item{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:13px 15px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start}
+    .booking-item.booked{background:var(--sage-light);border-color:#a8d5a8}
+    .booking-check{width:20px;height:20px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;margin-top:2px}
+    .booking-check.checked{background:var(--sage);border-color:var(--sage)}
+    .booking-info{flex:1;min-width:0}
+    .booking-title{font-size:.9rem;font-weight:600}
+    .booking-title.done{text-decoration:line-through;color:var(--text-muted)}
+    .booking-detail{font-size:.77rem;color:var(--text-muted);margin-top:2px;line-height:1.4}
+    .booking-who{font-size:.71rem;color:var(--sage);font-weight:600;margin-top:4px}
+    .booking-link{font-size:.73rem;color:var(--navy);font-weight:600;margin-top:4px;display:inline-block}
+    .booking-priority{font-size:.67rem;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;align-self:flex-start;text-transform:uppercase;letter-spacing:.05em}
+    .priority-high{background:#fee2e2;color:#991b1b}
+    .priority-med{background:var(--amber-light);color:#92400e}
+    .priority-low{background:#f0f4ff;color:var(--navy-light)}
+
+    /* SUGGESTIONS */
+    .sug-tabs{display:flex;gap:8px;overflow-x:auto;padding:0 0 12px;scrollbar-width:none;-ms-overflow-style:none}
+    .sug-tabs::-webkit-scrollbar{display:none}
+    .sug-tab{padding:7px 14px;border-radius:20px;font-size:.81rem;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:#fff;white-space:nowrap;transition:all .2s;flex-shrink:0}
+    .sug-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .suggestion-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:15px;margin-bottom:11px;transition:all .2s}
+    .suggestion-card:hover{box-shadow:var(--shadow)}
+    .sug-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .sug-name{font-size:.93rem;font-weight:600;color:var(--navy)}
+    .sug-location{font-size:.73rem;color:var(--text-muted);margin-top:2px}
+    .sug-badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;flex-shrink:0;background:rgba(200,169,110,.15);color:#8a6b2a}
+    .sug-desc{font-size:.81rem;color:var(--text-muted);line-height:1.5}
+    .sug-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .sug-tag{font-size:.7rem;padding:2px 8px;background:var(--ivory);border:1px solid var(--border);border-radius:20px;color:var(--text-muted)}
+    .sug-add-row{display:flex;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+    .sug-add-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--navy);color:#fff;border-radius:20px;font-size:.78rem;font-weight:600;transition:background .15s}
+    .sug-add-btn:hover{background:var(--navy-light)}
+
+    /* COST BADGE */
+    .cost-badge{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:10px;background:#f0fdf4;color:#3d6b3d;border:1px solid #a8d5a8;white-space:nowrap}
+    .cost-badge.free{background:#f0f4ff;color:var(--navy-light);border-color:#c7d7ff}
+    .cost-badge.included{background:var(--blush-light);color:#9d4a4a;border-color:var(--blush)}
+    .sug-cost{font-size:.78rem;font-weight:600;color:var(--sage);margin-top:6px}
+
+    /* BUDGET TAB */
+    .budget-hero{background:linear-gradient(135deg,var(--navy) 0%,#2d4a7a 100%);border-radius:var(--radius-lg);padding:24px 20px;margin-bottom:16px;color:#fff}
+    .budget-hero-label{font-size:.72rem;color:var(--gold-light);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+    .budget-total-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+    .budget-total{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:700;color:#fff;line-height:1}
+    .budget-total-sub{font-size:.8rem;color:rgba(255,255,255,.65);text-align:right}
+    .budget-meta-row{display:flex;gap:16px;margin-bottom:14px}
+    .budget-meta-item{flex:1}
+    .budget-meta-label{font-size:.68rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em}
+    .budget-meta-value{font-size:1.1rem;font-weight:700;margin-top:2px}
+    .budget-meta-value.green{color:#86efac}
+    .budget-meta-value.gold{color:var(--gold-light)}
+    .budget-main-bar{height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden}
+    .budget-main-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold),#86efac);transition:width .6s ease}
+    .budget-bar-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:.68rem;color:rgba(255,255,255,.5)}
+
+    .budget-cat-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:10px}
+    .budget-cat-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer}
+    .budget-cat-icon{font-size:1.2rem}
+    .budget-cat-name{font-size:.9rem;font-weight:600;flex:1}
+    .budget-cat-total{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--navy)}
+    .budget-cat-pct{font-size:.7rem;color:var(--text-muted);margin-left:4px}
+    .budget-cat-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:10px}
+    .budget-cat-fill{height:100%;border-radius:3px;transition:width .5s ease}
+    .budget-line-items{border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:7px}
+    .budget-line{display:flex;align-items:flex-start;gap:8px}
+    .budget-line-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+    .budget-line-info{flex:1;min-width:0}
+    .budget-line-name{font-size:.83rem;font-weight:500}
+    .budget-line-note{font-size:.72rem;color:var(--text-muted);margin-top:1px}
+    .budget-line-amt{font-size:.88rem;font-weight:700;color:var(--navy);flex-shrink:0;text-align:right}
+    .budget-line.booked .budget-line-name::after{content:' ✅';font-size:.7rem}
+    .budget-summary-row{display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid var(--border);margin-top:4px}
+    .budget-summary-label{font-size:.85rem;font-weight:700;color:var(--text-muted)}
+    .budget-summary-amt{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--navy)}
+
+    /* MODAL */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:flex-end;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:#fff;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:24px 20px 40px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto}
+    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+    .modal h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--navy);margin-bottom:16px}
+    .modal-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+    .modal-row{margin-bottom:13px}
+    .modal-row label{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+    .modal-row input,.modal-row textarea,.modal-row select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;background:var(--ivory)}
+    .modal-row input:focus,.modal-row textarea:focus,.modal-row select:focus{outline:none;border-color:var(--navy)}
+    .modal-row textarea{resize:vertical;min-height:70px}
+    .modal-btn-row{display:flex;gap:8px;margin-top:16px}
+    .mbtn{flex:1;padding:11px;border-radius:9px;font-size:.88rem;font-weight:600}
+    .mbtn-primary{background:var(--navy);color:#fff}
+    .mbtn-secondary{background:var(--ivory);color:var(--text-muted);border:1.5px solid var(--border)}
+    .mbtn-danger{background:#fee2e2;color:#991b1b}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:calc(var(--nav-height) + 14px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.83rem;font-weight:500;opacity:0;transition:all .3s;z-index:2000;white-space:nowrap;box-shadow:var(--shadow-lg)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* MISC */
+    .section-header{margin:20px 0 12px}
+    .section-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--navy)}
+    .section-sub{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+
+    @media(min-width:600px){.page-content,.day-detail{padding-left:20px;padding-right:20px}}
+  </style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen">
+  <div class="setup-card">
+    <div class="setup-logo">Dylan &amp; Meggie 💍</div>
+    <div class="setup-sub">Minimoon 2026 · Trip Planner Setup</div>
+    <div class="setup-step"><div class="step-num">1</div><div class="step-content"><h4>Go to Firebase Console</h4><p>Visit <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → "Add project" → Name it <strong>minimoon-2026</strong>.</p></div></div>
+    <div class="setup-step"><div class="step-num">2</div><div class="step-content"><h4>Add a Web App</h4><p>Click the <strong>&lt;/&gt;</strong> icon, give it a nickname, then copy the <strong>firebaseConfig</strong> values shown.</p></div></div>
+    <div class="setup-step"><div class="step-num">3</div><div class="step-content"><h4>Enable Auth &amp; Firestore</h4><p>Authentication → Email/Password → Enable. Firestore Database → Create database (production mode).</p></div></div>
+    <div class="setup-step"><div class="step-num">4</div><div class="step-content"><h4>Add Users</h4><p>Authentication → Users → Add user:<br>• Dylan: dylan@golocalvr.com<br>• Meggie: her email + shared password</p></div></div>
+    <hr class="setup-divider" />
+    <div class="setup-form">
+      <h3>Enter your Firebase config</h3>
+      <div class="form-row"><label>API Key</label><input type="text" id="cfg-apiKey" placeholder="AIzaSy..." /></div>
+      <div class="form-row"><label>Auth Domain</label><input type="text" id="cfg-authDomain" placeholder="minimoon-2026.firebaseapp.com" /></div>
+      <div class="form-row"><label>Project ID</label><input type="text" id="cfg-projectId" placeholder="minimoon-2026" /></div>
+      <div class="form-row"><label>App ID</label><input type="text" id="cfg-appId" placeholder="1:123456:web:abc..." /></div>
+      <div class="form-error" id="setup-error">Please fill in all fields.</div>
+      <button class="btn-primary" onclick="saveConfig()">Save &amp; Continue →</button>
+      <button class="btn-secondary" onclick="useDemoMode()">Use Demo Mode (single device)</button>
+      <div class="demo-note">⚠️ Demo mode saves locally on this device only — great for exploring, but Dylan and Meggie won't sync across different phones without Firebase.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="screen">
+  <div class="login-hero">
+    <div class="login-crest">💍</div>
+    <div class="login-title">Dylan &amp; Meggie</div>
+    <div class="login-dates">June 6, 2026 · Minimoon Starts June 7</div>
+  </div>
+  <div class="login-card">
+    <h2>Welcome back</h2>
+    <p>Log in to manage your minimoon plans</p>
+    <div id="demo-login">
+      <div class="user-select">
+        <div class="user-btn" onclick="selectDemoUser('dylan')" id="btn-dylan"><div class="user-avatar">🤵</div><div class="user-name">Dylan</div></div>
+        <div class="user-btn" onclick="selectDemoUser('meggie')" id="btn-meggie"><div class="user-avatar">👰</div><div class="user-name">Meggie</div></div>
+      </div>
+      <button class="btn-primary" onclick="demoLogin()">Continue →</button>
+    </div>
+    <div id="firebase-login" style="display:none">
+      <div class="form-row"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" /></div>
+      <div class="form-row"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" /></div>
+      <div class="form-error" id="login-error"></div>
+      <button class="btn-primary" onclick="firebaseLogin()">Sign In →</button>
+    </div>
+    <button class="btn-secondary" style="margin-top:14px" onclick="showScreen('setup-screen')">⚙️ Change Config</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen" class="screen">
+  <div class="topbar">
+    <div><div class="topbar-title">Dylan &amp; Meggie 💍</div><div class="topbar-sub">Minimoon · Jersey Shore · June 7–12</div></div>
+    <div class="topbar-actions">
+      <button class="edit-toggle-btn" id="edit-toggle-btn" onclick="toggleEditMode()">✏️ Edit</button>
+      <div class="user-dot" id="user-avatar" onclick="showUserMenu()">D</div>
+    </div>
+  </div>
+  <div class="edit-banner" id="edit-banner">✏️ Edit Mode — Use arrows to reorder, tap ✏️ to change details, ✕ to remove</div>
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-content">
+      <div class="hero-banner" id="dashboard-hero">
+        <div class="hero-banner-inner">
+          <div class="hero-eyebrow">💍 Just Married · Minimoon 2026</div>
+          <div class="hero-names">Dylan &amp; Meggie</div>
+          <div class="hero-sub">Jersey Shore · June 7 – 12, 2026</div>
+          <div class="hero-location-strip">
+            <span class="hero-loc-pill">🎰 Atlantic City</span>
+            <span class="hero-loc-pill">🌊 Sea Isle City</span>
+            <span class="hero-loc-pill">🏡 Cape May</span>
+          </div>
+          <div class="hero-counts">
+            <div class="count-item"><div class="count-num" id="countdown-wedding">—</div><div class="count-label">Days to<br>Wedding</div></div>
+            <div class="count-item"><div class="count-num" id="countdown-minimoon">—</div><div class="count-label">Days to<br>Minimoon</div></div>
+            <div class="count-item"><div class="count-num" id="booked-count">—</div><div class="count-label">Items<br>Booked</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Booking Progress</span><span class="card-action" onclick="navigate('bookings')">View All →</span></div>
+        <div id="progress-bars"></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">🏨</div><div class="stat-num">2</div><div class="stat-label">Hotels<br><span style="font-size:.65rem;color:var(--gold)">1 booked · 1 needed</span></div></div>
+        <div class="stat-card"><div class="stat-icon">🍽️</div><div class="stat-num">6</div><div class="stat-label">Dinners<br><span style="font-size:.65rem;color:var(--sage)">1 booked · 5 to plan</span></div></div>
+        <div class="stat-card"><div class="stat-icon">🗺️</div><div class="stat-num">3</div><div class="stat-label">Destinations<br><span style="font-size:.65rem;color:var(--text-muted)">AC · Sea Isle · Cape May</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-num">6</div><div class="stat-label">Days Away<br><span style="font-size:.65rem;color:var(--text-muted)">June 7–12</span></div></div>
+      </div>
+      <div class="oc-highlight">
+        <h4>🎰 Action Needed: Ocean Casino Room</h4>
+        <p>Book directly at <a href="https://www.theoceanac.com/offers/rooms-suites" target="_blank">theoceanac.com/offers</a> — ask about newlywed upgrades. Request a <strong>Premium Ocean View King</strong> on a high floor (20+). June Sunday nights are typically affordable.</p>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Trip at a Glance</span><span class="card-action" onclick="navigate('itinerary')">Full Itinerary →</span></div>
+        <div id="trip-timeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Itinerary -->
+  <div class="page" id="page-itinerary">
+    <div class="day-tabs" id="day-tabs-container"></div>
+    <div id="day-detail-container"></div>
+  </div>
+
+  <!-- Bookings -->
+  <div class="page" id="page-bookings">
+    <div class="page-content" id="bookings-container"></div>
+  </div>
+
+  <!-- Suggestions -->
+  <div class="page" id="page-suggestions">
+    <div class="page-content">
+      <div class="section-header">
+        <div class="section-title">Curated for You ✨</div>
+        <div class="section-sub">Based on your vibe: laid back, great food, music &amp; late nights</div>
+      </div>
+      <div class="sug-tabs" id="sug-tabs"></div>
+      <div id="sug-content"></div>
+    </div>
+  </div>
+
+  <!-- Budget -->
+  <div class="page" id="page-budget">
+    <div class="page-content" id="budget-container"></div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item" onclick="navigate('itinerary')" id="nav-itinerary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Itinerary</span>
+    </div>
+    <div class="nav-item" onclick="navigate('bookings')" id="nav-bookings">
+      <span id="bookings-badge" class="nav-badge" style="display:none"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="nav-label">Bookings</span>
+    </div>
+    <div class="nav-item" onclick="navigate('suggestions')" id="nav-suggestions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span class="nav-label">Ideas</span>
+    </div>
+    <div class="nav-item" onclick="navigate('budget')" id="nav-budget">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="nav-label">Budget</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOverlay(event)">
+  <div class="modal" id="modal-content"><div class="modal-handle"></div><div id="modal-body"></div></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===========================
+//  CONSTANTS & USERS
+// ===========================
+const USERS = {
+  dylan:  { name:'Dylan',  emoji:'🤵', initial:'D', email:'dylan@golocalvr.com' },
+  meggie: { name:'Meggie', emoji:'👰', initial:'M', email:'' }
+};
+
+const CONFIG_KEY   = 'minimoon_config';
+const BOOKINGS_KEY = 'minimoon_bookings';
+const CUSTOM_KEY   = 'minimoon_custom';
+const USER_KEY     = 'minimoon_user';
+
+// ===========================
+//  TRIP DATA
+// ===========================
+const TRIP = { days: [
+  { id:'day1', date:'2026-06-07', dayName:'Sunday',  shortDate:'Jun 7',
+    location:'Atlantic City, NJ', title:'Atlantic City — Arrival',
+    hotel:{ name:'Ocean Casino Resort', status:'needs_booking', url:'https://www.theoceanac.com' },
+    activities:[
+      { id:'ac1_checkin',  title:'Check in — Ocean Casino Resort', type:'hotel',         status:'needs_booking', time:'3:00 PM',   notes:'Request Premium Ocean View King or Studio Suite, high floor (20+). Book at theoceanac.com/offers or call — mention you\'re newlyweds for possible upgrade.' },
+      { id:'ac1_pool',     title:'Pools & Private Beach',           type:'relaxation',    status:'suggestion',    time:'Afternoon', notes:'Ocean has multiple pools including a rooftop terrace. Perfect first afternoon as newlyweds 🥂 Grab a poolside drink and decompress.' },
+      { id:'ac1_dinner',   title:'Dinner — Amada or Il Mulino',    type:'dining',        status:'needs_booking', time:'7:00 PM',   notes:'Amada is Jose Garces\'s vibrant tapas spot — great cocktails, shareable dishes. Il Mulino is upscale Italian. Both inside Ocean Casino. Reserve on OpenTable.' },
+      { id:'ac1_casino',   title:'Casino Floor & Villain & Saint', type:'nightlife',     status:'suggestion',    time:'Evening',   notes:'Villain & Saint: AC\'s best rock & roll gastropub with live music. Start the minimoon the right way — late night casino vibes.' }
+    ],
+    bonus:[
+      { icon:'🎡', name:'Steel Pier', desc:'Iconic amusement rides over the Atlantic Ocean — a fun, classic AC detour if energy allows.' },
+      { icon:'🍸', name:'Knife & Fork Inn', desc:'A legendary AC restaurant open since 1912. Amazing for cocktails or a late dinner — historic and atmospheric.' },
+      { icon:'🏛️', name:'Absecon Lighthouse', desc:'AC\'s tallest lighthouse with great views. Quick stop worth it if you have an afternoon hour to spare.' }
+    ]
+  },
+  { id:'day2', date:'2026-06-08', dayName:'Monday', shortDate:'Jun 8',
+    location:'Atlantic City, NJ', title:'Atlantic City — Beach Day',
+    hotel:{ name:'Ocean Casino Resort', status:'needs_booking', url:'https://www.theoceanac.com' },
+    activities:[
+      { id:'ac2_spa',      title:'Exhale Spa — Couples Massage',   type:'relaxation',    status:'needs_booking', time:'11:00 AM', notes:'⭐ Treat yourselves! The Exhale Spa is inside Ocean Casino. A couples massage on your first full day as husband & wife is the move. Book ahead — spots fill fast.' },
+      { id:'ac2_beach',    title:'Beach & Rooftop Pool',           type:'relaxation',    status:'suggestion',    time:'Afternoon',notes:'Ocean\'s private beach + rooftop pool. Order drinks, read, float. This is your vacation — do nothing and love it.' },
+      { id:'ac2_boardwalk',title:'Atlantic City Boardwalk Stroll', type:'sightseeing',   status:'suggestion',    time:'5:00 PM',  notes:'Walk the historic Boardwalk — salt water taffy, fresh fudge, classic AC energy. Golden hour here is really beautiful.' },
+      { id:'ac2_show',     title:'Show or Concert at Ocean',       type:'entertainment', status:'needs_booking', time:'Evening',  notes:'🎵 Check theoceanac.com/entertainment for June 8 shows. Ovation Hall hosts big Live Nation acts. Villain & Saint has live bands most evenings — no ticket needed.' },
+      { id:'ac2_dinner',   title:'Dinner at Villain & Saint',      type:'dining',        status:'suggestion',    time:'7:30 PM',  notes:'Gastropub with craft beer, elevated pub food, and live music. Great vibe for a late dinner on your last night in AC.' }
+    ],
+    bonus:[
+      { icon:'🦘', name:"Lucy the Elephant", desc:'Drive 10 min south to Margate City — a bizarre, beloved 6-story elephant building you can tour. Quirky and fun.' },
+      { icon:'🛍️', name:'AC Outlets (The Walk)', desc:'If you want to browse, The Walk is a nice open-air outlet street just off the Boardwalk.' },
+      { icon:'🎨', name:'Garden Pier Art Museum', desc:'Small but worthwhile Atlantic City art museum right on the Boardwalk — great rainy-afternoon option.' }
+    ]
+  },
+  { id:'day3', date:'2026-06-09', dayName:'Tuesday', shortDate:'Jun 9',
+    location:'AC → Sea Isle City → Cape May', title:'Shore Drive to Cape May',
+    hotel:{ name:'The Mason Cottage, Cape May', status:'booked', url:'https://www.themasoncottage.com' },
+    activities:[
+      { id:'day3_checkout', title:'Check out of Ocean Casino',          type:'hotel',      status:'auto',          time:'11:00 AM', notes:'Pack up and head south on the Garden State Parkway — Cape May is ~90 minutes. Scenic drive hugging the coast.' },
+      { id:'sic_lunch',     title:'🦀 Seafood Lunch — Sea Isle City', type:'dining',      status:'suggestion',    time:'12:30 PM', notes:'Mike\'s Seafood & Dock Restaurant is a Sea Isle legend — crabs, cold beer, outdoor waterfront seating. Jersey Shore in a bottle. Or Topsail Steamer for steamed buckets.' },
+      { id:'sic_beach',     title:'Quick Beach Stop — Sea Isle City',  type:'relaxation', status:'suggestion',    time:'Early PM', notes:'Sea Isle beach is beautiful and less crowded than AC. Even 45 minutes here resets you. This is their vibe — chill, local, summer.' },
+      { id:'sic_bar',       title:'Drinks at The Point or KIX',        type:'nightlife',  status:'suggestion',    time:'Afternoon',notes:'The Point: Sea Isle\'s iconic tiki bar. KIX: great live music. Both are the quintessential Jersey Shore afternoon bar scene you love.' },
+      { id:'cm_checkin',    title:'✅ Check in — The Mason Cottage',  type:'hotel',      status:'booked',        time:'4:00 PM',  notes:'BOOKED ✓ Beautiful Victorian B&B in the heart of Cape May. Breakfast included every morning.' },
+      { id:'cm_tue_mall',   title:'Explore Washington Street Mall',    type:'sightseeing',status:'suggestion',    time:'Evening',  notes:'Cape May\'s charming pedestrian mall — independent boutiques, ice cream, great people watching, Victorian architecture everywhere.' },
+      { id:'cm_tue_dinner', title:'Dinner in Cape May',                type:'dining',     status:'needs_booking', time:'7:00 PM',  notes:'Mad Batter Restaurant: creative American, great cocktails, iconic Cape May spot. Or The Ugly Mug: lively, local, often has live music. Reserve ahead!' }
+    ],
+    bonus:[
+      { icon:'🏖️', name:'Stone Harbor', desc:'The upscale neighbor to Sea Isle — beautiful boutique shopping, great beach, 15 min south of Sea Isle. Worth a quick stop.' },
+      { icon:'🌅', name:'Avalon Beach', desc:'One of the most beautiful and peaceful beaches on the Shore. Great for a quick sunset stop on the drive down.' },
+      { icon:'🎣', name:'Two Mile Landing Restaurant', desc:'A classic Jersey Shore seafood restaurant right on the water in Wildwood — great dock bar energy if you arrive early.' }
+    ]
+  },
+  { id:'day4', date:'2026-06-10', dayName:'Wednesday', shortDate:'Jun 10',
+    location:'Cape May, NJ', title:'Cape May Exploration',
+    hotel:{ name:'The Mason Cottage', status:'booked' },
+    activities:[
+      { id:'cm2_breakfast', title:'✅ Breakfast at Mason Cottage',      type:'dining',      status:'booked',        time:'Morning',  notes:'BOOKED ✓ Included with your stay. A proper Victorian B&B breakfast — take your time, enjoy the porch.' },
+      { id:'cm2_lighthouse',title:'Cape May Lighthouse',                type:'sightseeing', status:'suggestion',    time:'10:00 AM', notes:'Climb 199 spiral steps for 360° views of the Atlantic and Delaware Bay. Cape May Point State Park surrounding it is gorgeous — great walk.' },
+      { id:'cm2_whale',     title:'🐬 Dolphin & Whale Watch Tour',     type:'adventure',   status:'needs_booking', time:'12:00 PM', notes:'Cape May Whale Watch & Research Center — dolphin sightings near-guaranteed in June. 3-hour cruise. Book at capemaywhalewatch.com — sells out!' },
+      { id:'cm2_beach',     title:'Cape May Beach Afternoon',           type:'relaxation',  status:'suggestion',    time:'3:00 PM',  notes:'One of the cleanest, most beautiful beaches on the Shore. Rent an umbrella and just exist. You\'ve earned this.' },
+      { id:'cm2_winery',    title:'🍷 Cape May Winery Sunset Tasting', type:'dining',      status:'suggestion',    time:'5:30 PM',  notes:'Cape May Winery or Hawk Haven Vineyard — outdoor tasting with vineyard views. Incredibly romantic at golden hour. Walk-ins usually fine.' },
+      { id:'cm2_dinner',    title:'⭐ Dinner at Peter Shields Inn',    type:'dining',      status:'needs_booking', time:'7:30 PM',  notes:'Most romantic restaurant in Cape May — 1907 Georgian Revival mansion on Beach Ave, live piano, oceanfront porch. Sea bass & wagyu standouts. Book on OpenTable now.' }
+    ],
+    bonus:[
+      { icon:'🏡', name:'Historic Cold Spring Village', desc:'30-acre living history museum with costumed interpreters and 27 restored buildings. Good for a 90-min morning window if curious.' },
+      { icon:'🦅', name:'Cape May Bird Observatory', desc:'Famous migration site — the "birding capital of North America." Even non-birders enjoy the beautiful nature walk through marshland.' },
+      { icon:'🚴', name:'Cape May Bike Rentals', desc:'Rent bikes and cruise the quiet streets of Cape May — the flat town layout makes it perfect. A fun different way to explore.' }
+    ]
+  },
+  { id:'day5', date:'2026-06-11', dayName:'Thursday', shortDate:'Jun 11',
+    location:'Cape May, NJ', title:'Beach Plum Farm Night ⭐',
+    hotel:{ name:'The Mason Cottage', status:'booked' },
+    activities:[
+      { id:'cm3_breakfast', title:'✅ Breakfast at Mason Cottage',    type:'dining',      status:'booked',        time:'Morning',  notes:'BOOKED ✓ Enjoy a slow morning — big dinner tonight, so take it easy today.' },
+      { id:'cm3_physick',   title:'Emlen Physick Estate Tour',        type:'sightseeing', status:'suggestion',    time:'10:30 AM', notes:'Only Victorian house museum in Cape May, built 1879. Costumed tours are genuinely interesting — history and architecture nerd heaven.' },
+      { id:'cm3_brewery',   title:'🍺 Cape May Brewing Company',     type:'dining',      status:'suggestion',    time:'1:00 PM',  notes:'Award-winning local brewery in a converted Navy airfield hangar. Great tap room energy for a casual afternoon. Don\'t fill up too much — Beach Plum is tonight!' },
+      { id:'cm3_beach',     title:'Last Full Beach Afternoon',        type:'relaxation',  status:'suggestion',    time:'3:00 PM',  notes:'Your last full beach day. Read, swim, nap in the sun. Soak it in.' },
+      { id:'cm3_beachplum', title:'✅ 🌟 Dinner — Beach Plum Farm', type:'dining',      status:'booked',        time:'7:00 PM',  notes:'BOOKED ✓ One of the best farm-to-table experiences in all of NJ. Ingredients grown steps from your plate. Prepare to be blown away.' },
+      { id:'cm3_nightcap',  title:'Nightcap — The Rusty Nail',       type:'nightlife',   status:'suggestion',    time:'Late',     notes:'After Beach Plum Farm, The Rusty Nail is Cape May\'s best live music bar. Carney\'s is great too. If the vibe is right, keep the night going!' }
+    ],
+    bonus:[
+      { icon:'🚣', name:'Sunset Kayak Tour', desc:'Cape May kayak tours through the salt marshes at sunset — incredibly beautiful and unexpectedly romantic. Book at capemaykayak.com.' },
+      { icon:'🌿', name:'Cape May Nature Trails', desc:'A free half-mile trail through Cape May forest and wetlands near the beach — great for a quiet morning or afternoon walk.' },
+      { icon:'💃', name:'Elaine\'s Dinner Theater', desc:'Cape May\'s beloved dinner theater — a campy, fun murder mystery show. If you want something different and silly before Beach Plum, this is it.' }
+    ]
+  },
+  { id:'day6', date:'2026-06-12', dayName:'Friday', shortDate:'Jun 12',
+    location:'Cape May → Home', title:'Farewell Cape May ❤️',
+    hotel:{ name:'Heading Home', status:'auto' },
+    activities:[
+      { id:'cm4_breakfast', title:'✅ Final Breakfast at Mason Cottage', type:'dining',     status:'booked',        time:'Morning',  notes:'BOOKED ✓ Savor your last Mason Cottage breakfast. Sit on the porch, take it all in, say goodbye to Cape May properly.' },
+      { id:'cm4_mall',      title:'Washington Street Mall Shopping',    type:'sightseeing',status:'suggestion',    time:'10:00 AM', notes:'Last chance for Cape May souvenirs — local jams, art, beach reads, independent boutiques. Washington Street is perfect for a final stroll.' },
+      { id:'cm4_checkout',  title:'Check out of Mason Cottage',         type:'hotel',      status:'auto',          time:'11:00 AM', notes:'Pack up and take one last walk through the Victorian streets of Cape May before heading north.' },
+      { id:'cm4_lunch',     title:'Farewell Lunch — Lobster House',     type:'dining',     status:'needs_booking', time:'12:00 PM', notes:'The Lobster House is a Cape May institution — fresh off-the-boat seafood on the dock. The perfect send-off. Call ahead or walk in.' }
+    ],
+    bonus:[
+      { icon:'💎', name:'Cape May Diamond Hunting', desc:'Hunt for quartz "diamonds" on the beach at Cape May Point — a beloved local tradition. Free, fun, and you might find a gem.' },
+      { icon:'🌅', name:'Cape May Point State Park', desc:'A beautiful final morning walk through dunes and trails with spectacular lighthouse views before the drive home.' },
+      { icon:'🎡', name:'Wildwood Boardwalk', desc:'8 miles north — if you want one last classic Shore boardwalk experience with rides and boardwalk food before heading all the way home.' }
+    ]
+  }
+]};
+
+// Booking checklist items
+const BOOKING_ITEMS = [
+  { id:'book_ocean_room',    category:'Atlantic City', priority:'high', title:'Ocean Casino — Hotel Room',               detail:'June 7–9 (2 nights). Premium Ocean View King or Studio Suite. Book direct at theoceanac.com/offers or call (609) 783-8000. Mention newlyweds!', link:'https://www.theoceanac.com/hotel' },
+  { id:'book_ocean_dinner',  category:'Atlantic City', priority:'high', title:'Dinner Reservation — Amada or Il Mulino', detail:'June 7 or 8. Amada (Jose Garces tapas) or Il Mulino (upscale Italian). Both inside Ocean Casino. OpenTable.', link:'https://www.opentable.com' },
+  { id:'book_ocean_show',    category:'Atlantic City', priority:'med',  title:'Entertainment at Ocean Casino',           detail:'Check theoceanac.com/entertainment for June 8 shows. Ovation Hall has Live Nation acts. Villain & Saint has live music most nights — no ticket needed.', link:'https://www.theoceanac.com/entertainment/event-calendar' },
+  { id:'book_ocean_spa',     category:'Atlantic City', priority:'med',  title:'Exhale Spa — Couples Massage',           detail:'June 7 or 8. Inside Ocean Casino. Call ahead — spa slots fill fast on weekends.', link:'https://www.theoceanac.com/spa' },
+  { id:'book_cm_tue_dinner', category:'Cape May',      priority:'high', title:'Tuesday Dinner in Cape May',             detail:'June 9. Mad Batter (creative American, cocktails) or The Ugly Mug (lively local spot with music). Book ahead!', link:'https://www.opentable.com' },
+  { id:'book_cm_whale',      category:'Cape May',      priority:'med',  title:'Dolphin & Whale Watch Tour',             detail:'June 10. Cape May Whale Watch & Research Center. Book at capemaywhalewatch.com — sells out in summer!', link:'https://www.capemaywhalewatch.com' },
+  { id:'book_peter_shields', category:'Cape May',      priority:'high', title:'Dinner at Peter Shields Inn',            detail:'June 10. Most romantic restaurant in NJ — oceanfront porch, live piano, 1907 mansion. OpenTable, book ASAP.', link:'https://www.opentable.com/peter-shields-inn' },
+  { id:'book_cm_fri_lunch',  category:'Cape May',      priority:'low',  title:'Farewell Lunch — The Lobster House',     detail:'June 12. Walk-ins often fine, but calling ahead never hurts for a Friday.', link:'https://www.thelobsterhouse.com' }
+];
+
+const ALREADY_BOOKED = [
+  { id:'pre_mason',    title:'✅ The Mason Cottage — Cape May',  detail:'June 9–12 (3 nights). Victorian B&B, breakfast included daily.' },
+  { id:'pre_beachplum',title:'✅ Beach Plum Farm Dinner',        detail:'June 11. One of the best meals you\'ll have in NJ — excellent choice.' }
+];
+
+// Suggestions data (cost = estimated for 2 people)
+const SUGGESTIONS = {
+  dining:[
+    { name:"Villain & Saint",         location:"Ocean Casino Resort, Atlantic City", desc:"AC's favorite rock & roll gastropub. Craft beer, elevated pub food, bass-pumping live shows every weekend. The perfect first-night minimoon bar.", tags:["Live Music","Craft Beer","Late Night"], badge:"🎸 Rock Vibes", cost:"~$100 for 2" },
+    { name:"Amada",                   location:"Ocean Casino Resort, Atlantic City", desc:"Jose Garces's vibrant Spanish tapas restaurant inside Ocean. Great cocktails and shareable plates — the vibe is lively but still romantic.", tags:["Tapas","Spanish","Cocktails"], badge:"🍷 Fine Dining", cost:"~$160 for 2" },
+    { name:"Peter Shields Inn",       location:"1301 Beach Ave, Cape May",           desc:"The most romantic restaurant in Cape May. 1907 Georgian Revival mansion, live piano, oceanfront porch. Lobster bisque + sea bass = perfection. Book ASAP.", tags:["Ocean View","Live Piano","Fine Dining"], badge:"⭐ Must Book", cost:"~$260 for 2" },
+    { name:"The Ebbitt Room",         location:"25 Jackson St, Cape May",            desc:"Candlelit dining, heated porch, award-winning wine. Cape May scallops are a signature dish. Intimate and perfect for honeymooners.", tags:["Romantic","Scallops","Wine"], badge:"💕 Romantic", cost:"~$240 for 2" },
+    { name:"Beach Plum Farm",         location:"Cape May",                           desc:"BOOKED ✓ — 100% farm-to-table with ingredients grown steps from your plate. One of the genuinely great dining experiences in all of NJ. You nailed this one.", tags:["Farm-to-Table","BOOKED ✓"], badge:"✅ Booked", cost:"$270 for 2 (BYOB)" },
+    { name:"Mike's Seafood & Dock",   location:"Sea Isle City",                      desc:"A Sea Isle legend. Outdoor crab feasts, cold beer, waterfront seating. The quintessential Jersey Shore lunch stop on your drive down to Cape May.", tags:["Crab Feast","BYOB","Shore Classic"], badge:"🦀 Shore Classic", cost:"~$100 for 2" },
+    { name:"Mad Batter",              location:"19 Jackson St, Cape May",            desc:"A Cape May staple since 1975. Creative American cuisine in a charming Victorian setting. Known for inventive cocktails and a genuinely fun atmosphere.", tags:["Creative American","Cocktails"], badge:"🏛️ CM Classic", cost:"~$130 for 2" }
+  ],
+  nightlife:[
+    { name:"Villain & Saint",    location:"Ocean Casino Resort, Atlantic City", desc:"AC's best live music venue — rock and roll energy, great beer, live bands on weekends. Stay past midnight and you'll understand why everyone loves this place.", tags:["Live Music","Late Night","Craft Beer"], badge:"🎸 Best in AC", cost:"~$60–80 drinks" },
+    { name:"The Point",          location:"Sea Isle City",                      desc:"Sea Isle's iconic tiki bar. THE Jersey Shore bar experience — cold drinks, ocean breeze, and that summer NJ shore energy. A must-stop on your drive down.", tags:["Tiki Bar","Shore Vibes","Afternoon"], badge:"🌺 Shore Icon", cost:"~$50–70 for 2" },
+    { name:"KIX",                location:"Sea Isle City",                      desc:"Great live music in Sea Isle. Known for fun bands and a lively crowd. Same shore energy as The Point, slightly different crowd.", tags:["Live Music","Shore Bar"], badge:"🎵 Live Music", cost:"~$40–60 for 2" },
+    { name:"The Rusty Nail",     location:"205 Beach Ave, Cape May",            desc:"Cape May's best live music bar. Perfect post-dinner spot after Beach Plum Farm. Solid bands, good drinks, late-night energy you love.", tags:["Live Music","Late Night","Beach"], badge:"🎶 Post-Dinner", cost:"~$60 for 2" },
+    { name:"Carney's",           location:"401 Beach Ave, Cape May",            desc:"A Cape May boardwalk institution. Great for late-night drinks with ocean views. More relaxed than Rusty Nail but still a great vibe.", tags:["Boardwalk","Late Night","Ocean Views"], badge:"🌊 Casual Late", cost:"~$50 for 2" },
+    { name:"The Ugly Mug",       location:"426 Washington St, Cape May",        desc:"Half restaurant, half late-night bar. Beloved Cape May gathering spot — often has live music, always has a fun, local crowd.", tags:["Live Music","Bar Food","Local Fave"], badge:"🍺 Local Fave", cost:"~$70 for 2" }
+  ],
+  activities:[
+    { name:"Cape May Lighthouse",          location:"Cape May Point State Park",         desc:"199 steps, 360° views of the Atlantic and Delaware Bay. The surrounding state park is gorgeous. Worth the climb every time.", tags:["Scenic Views","Historic","Active"], badge:"🏛️ Must-Do", cost:"~$30 for 2" },
+    { name:"Dolphin & Whale Watch",        location:"Cape May Whale Watch Center",       desc:"Dolphin sightings near-guaranteed in June. 3-hour cruise with naturalists narrating. Incredibly romantic on the water. Book ahead — sells out!", tags:["Nature","Romantic","Ocean"], badge:"🐬 Book Now", cost:"~$120 for 2" },
+    { name:"Exhale Spa — Couples Massage", location:"Ocean Casino Resort, Atlantic City",desc:"Starting your minimoon with a couples massage on Day 1 or 2 is the perfect move. Call ahead to book — spa spots fill fast on weekends.", tags:["Couples","Relaxation","Spa"], badge:"💆 Treat Yourselves", cost:"~$220 for 2" },
+    { name:"Cape May Winery",              location:"Cape May Court House",              desc:"Sunset wine tasting at a real NJ vineyard with gorgeous outdoor views. Light and romantic — great before or after dinner.", tags:["Wine","Romantic","Sunset"], badge:"🍷 Romantic", cost:"~$50 for 2" },
+    { name:"Sunset Kayak Tour",            location:"Cape May Salt Marshes",             desc:"Kayaking through Cape May's salt marshes at sunset is unexpectedly beautiful. A memorable couple activity. Book at capemaykayak.com.", tags:["Active","Romantic","Sunset"], badge:"🚣 Hidden Gem", cost:"~$100 for 2" },
+    { name:"Atlantic City Boardwalk",      location:"Atlantic City, NJ",                desc:"Walk the historic Boardwalk at golden hour — salt water taffy, ocean breeze, people watching. Classic AC and genuinely lovely in the evening.", tags:["Historic","Walking","Iconic"], badge:"🎪 Iconic", cost:"Free (+ snack budget)" }
+  ],
+  "if-time-permits":[
+    { name:"Lucy the Elephant",           location:"Margate City, NJ (near AC)",  desc:"A 6-story elephant building you can walk inside. Built in 1881, utterly bizarre, very fun. Just 10 min south of Ocean Casino.", tags:["Quirky","Quick Stop","Iconic"], badge:"🐘 Weird & Great", cost:"~$10 for 2" },
+    { name:"Steel Pier",                  location:"Atlantic City, NJ",           desc:"Classic AC amusement pier with rides over the Atlantic Ocean. Fun if you want a spontaneous, festive hour.", tags:["Fun","Amusement","AC"], badge:"🎡 Classic AC", cost:"~$30 for 2" },
+    { name:"Stone Harbor",                location:"Stone Harbor, NJ",            desc:"Upscale Shore town 15 min south of Sea Isle — beautiful boutique shopping and pristine beach. Great quick stop on the drive to Cape May.", tags:["Shopping","Beach","Shore Towns"], badge:"🏖️ Shore Gem", cost:"Free to explore" },
+    { name:"Cape May Diamond Hunting",    location:"Cape May Point Beach",        desc:"Hunt for quartz 'diamonds' washed up on the beach at Cape May Point. Free, fun, and a great Cape May tradition.", tags:["Free","Fun","Tradition"], badge:"💎 Local Tradition", cost:"Free" },
+    { name:"Historic Cold Spring Village",location:"Cape May, NJ",               desc:"30-acre living history museum with costumed interpreters and 27 restored historic buildings. Worth 90 min if you have a slow morning.", tags:["History","Families","Educational"], badge:"🏡 History Lovers", cost:"~$30 for 2" },
+    { name:"Hawk Haven Vineyard",         location:"Rio Grande, NJ",              desc:"An intimate boutique winery just outside Cape May. More relaxed and less crowded than Cape May Winery — a nice alternative.", tags:["Wine","Boutique","Hidden"], badge:"🍇 Hidden Gem", cost:"~$40 for 2" },
+    { name:"Cape May Bike Rentals",       location:"Cape May, NJ",               desc:"Rent bikes and cruise Cape May's quiet, flat streets. A fun way to explore the Victorian neighborhoods away from the tourists.", tags:["Active","Fun","Exploring"], badge:"🚴 Fun Alternative", cost:"~$40 for 2" },
+    { name:"Wildwood Boardwalk",          location:"Wildwood, NJ (8 mi north)",  desc:"One last classic Shore boardwalk on the way home — rides, boardwalk food, classic NJ summer energy. Great farewell to the Shore.", tags:["Boardwalk","Classic Shore","Fun"], badge:"🎠 Shore Send-Off", cost:"~$20–40 for 2" }
+  ]
+};
+
+// ===========================
+//  COST MAP (per activity, est. for 2 people)
+// ===========================
+const COST_MAP = {
+  ac1_checkin:   { label:'~$400 total', cls:'',        tip:'est. $200/night × 2 nights — verify when booking' },
+  ac1_pool:      { label:'Included',   cls:'included', tip:'Free with hotel stay' },
+  ac1_dinner:    { label:'~$160',      cls:'',         tip:'Apps, entrees & cocktails for 2' },
+  ac1_casino:    { label:'Flexible',   cls:'free',     tip:'Set your own casino budget' },
+  ac2_spa:       { label:'~$220',      cls:'',         tip:'60-min couples massage (est.)' },
+  ac2_beach:     { label:'Included',   cls:'included', tip:'Free with hotel stay' },
+  ac2_boardwalk: { label:'~$20',       cls:'free',     tip:'Taffy, treats & people watching' },
+  ac2_show:      { label:'~$120',      cls:'',         tip:'2 tickets — varies by act' },
+  ac2_dinner:    { label:'~$100',      cls:'',         tip:'Dinner + drinks for 2' },
+  day3_checkout: { label:'—',          cls:'free',     tip:'' },
+  sic_lunch:     { label:'~$100',      cls:'',         tip:'Crab feast + drinks for 2' },
+  sic_beach:     { label:'~$30',       cls:'free',     tip:'Beach tags + umbrella rental' },
+  sic_bar:       { label:'~$70',       cls:'',         tip:'Afternoon drinks + tips' },
+  cm_checkin:    { label:'~$750 total',cls:'',         tip:'est. $250/night × 3 nights — verify w/ confirmation' },
+  cm_tue_mall:   { label:'Free',       cls:'free',     tip:'Just browsing the Victorian shops' },
+  cm_tue_dinner: { label:'~$130',      cls:'',         tip:'Dinner + cocktails for 2' },
+  cm2_breakfast: { label:'Included',   cls:'included', tip:'Free — included with Mason Cottage stay' },
+  cm2_lighthouse:{ label:'~$30',       cls:'',         tip:'$15/person' },
+  cm2_whale:     { label:'~$120',      cls:'',         tip:'~$60/person · 3-hr cruise' },
+  cm2_beach:     { label:'Free',       cls:'free',     tip:'Beach access included with B&B' },
+  cm2_winery:    { label:'~$50',       cls:'',         tip:'Tasting flights for 2' },
+  cm2_dinner:    { label:'~$260',      cls:'',         tip:'Fine dining, entrees + wine for 2' },
+  cm3_breakfast: { label:'Included',   cls:'included', tip:'Free — included with Mason Cottage stay' },
+  cm3_physick:   { label:'~$30',       cls:'',         tip:'$15/person for guided tour' },
+  cm3_brewery:   { label:'~$50',       cls:'',         tip:'Afternoon beers for 2' },
+  cm3_beach:     { label:'Free',       cls:'free',     tip:'' },
+  cm3_beachplum: { label:'~$270',      cls:'',         tip:'$135/person · BYOB (bring a bottle!)' },
+  cm3_nightcap:  { label:'~$70',       cls:'',         tip:'Late night drinks for 2' },
+  cm4_breakfast: { label:'Included',   cls:'included', tip:'Free — included with Mason Cottage stay' },
+  cm4_mall:      { label:'~$80',       cls:'',         tip:'Souvenirs & Cape May shopping' },
+  cm4_checkout:  { label:'—',          cls:'free',     tip:'' },
+  cm4_lunch:     { label:'~$140',      cls:'',         tip:'Seafood + drinks, classic farewell' }
+};
+
+// ===========================
+//  BUDGET DATA  ($4,000 total · ~$3,800 estimated)
+// ===========================
+const BUDGET = {
+  total: 4000,
+  estimated: 3800,
+  categories: [
+    { id:'hotels',    icon:'🏨', name:'Hotels & Accommodation', color:'#2d4070', est:1150,
+      items:[
+        { name:'Ocean Casino Resort (2 nights)', est:400,  note:'est. $200/night · Sun–Mon June 7–9 · needs booking',  booked:false },
+        { name:'The Mason Cottage (3 nights)',   est:750,  note:'est. $250/night · Tue–Thu June 9–12 · BOOKED ✓',     booked:true  }
+      ]
+    },
+    { id:'dining',    icon:'🍽️', name:'Dining & Drinks',         color:'#C8A96E', est:1380,
+      items:[
+        { name:'Beach Plum Farm (Thu dinner)',    est:270, note:'$135/person · BYOB · BOOKED ✓',                         booked:true  },
+        { name:'Peter Shields Inn (Wed dinner)',  est:260, note:'est. $90/person + drinks · needs booking',               booked:false },
+        { name:'Amada or Il Mulino (AC dinner)',  est:160, note:'est. $60/person + cocktails · needs booking',            booked:false },
+        { name:'Tuesday dinner in Cape May',      est:130, note:'Mad Batter or Ugly Mug · needs booking',                 booked:false },
+        { name:'Farewell Lunch — Lobster House',  est:140, note:'est. $55/person + drinks',                               booked:false },
+        { name:"Mike's Seafood — Sea Isle",       est:100, note:'Crab feast lunch on the drive down',                    booked:false },
+        { name:'Cape May Brewing + Winery',       est:80,  note:'Afternoon tastings for 2',                              booked:false },
+        { name:'Coffee, snacks & casual bites',   est:240, note:'est. $40/day across 6 days + extras',                  booked:false }
+      ]
+    },
+    { id:'activities',icon:'🎭', name:'Activities & Entertainment', color:'#6B9E6B', est:590,
+      items:[
+        { name:'Exhale Spa — Couples Massage',    est:220, note:'~$110/person · book ahead at Ocean Casino',             booked:false },
+        { name:'Show / Concert at Ocean Casino',  est:120, note:'2 tickets — varies by act · check June 8 calendar',    booked:false },
+        { name:'Dolphin & Whale Watch Tour',      est:120, note:'~$60/person · 3-hr cruise · book at capemaywhalewatch.com', booked:false },
+        { name:'Cape May Lighthouse',             est:30,  note:'$15/person · no reservation needed',                   booked:false },
+        { name:'Misc (bikes, kayak, spontaneous)',est:100, note:'Buffer for fun add-ons that come up',                  booked:false }
+      ]
+    },
+    { id:'nightlife', icon:'🌙', name:'Nightlife & Casino',         color:'#6b21a8', est:320,
+      items:[
+        { name:'Casino spending budget',          est:150, note:'Discretionary — set your own limit at the table!',     booked:false },
+        { name:'Sea Isle bar tabs (The Point/KIX)',est:80, note:'Afternoon drinks on the drive down',                   booked:false },
+        { name:'Cape May late nights (Rusty Nail)',est:90, note:'Post-Beach Plum Farm and general late nights',         booked:false }
+      ]
+    },
+    { id:'shopping',  icon:'🛍️', name:'Shopping & Souvenirs',       color:'#9d4a4a', est:130,
+      items:[
+        { name:'Cape May boutiques & gifts',      est:100, note:'Washington Street Mall + local shops',                 booked:false },
+        { name:'Atlantic City misc',              est:30,  note:'Boardwalk treats, novelties',                         booked:false }
+      ]
+    },
+    { id:'misc',      icon:'⛽', name:'Gas, Tolls & Incidentals',   color:'#8a8a8a', est:230,
+      items:[
+        { name:'Gas (round trip)',                est:60,  note:'Home → AC → Cape May → Home (varies by car)',         booked:false },
+        { name:'Parkway & bridge tolls',          est:30,  note:'Garden State Parkway tolls each way',                 booked:false },
+        { name:'Beach tags',                      est:30,  note:'Daily tags in Sea Isle & Cape May',                   booked:false },
+        { name:'Gratuity throughout',             est:110, note:'Tips on meals, spa, tours — always worth it',        booked:false }
+      ]
+    }
+  ]
+};
+
+// ===========================
+//  PHOTOS  (Unsplash · free to use)
+// ===========================
+const PHOTOS = {
+  dashboard: 'https://images.unsplash.com/photo-1519046904884-53ec45a4b2a5?auto=format&fit=crop&w=1920&q=80',
+  day1: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1920&q=80',
+  day2: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80',
+  day3: 'https://images.unsplash.com/photo-1519046904884-53ec45a4b2a5?auto=format&fit=crop&w=1920&q=80',
+  day4: 'https://images.unsplash.com/photo-1568454537842-d933259bb258?auto=format&fit=crop&w=1920&q=80',
+  day5: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1920&q=80',
+  day6: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1920&q=80',
+};
+
+// ===========================
+//  STATE
+// ===========================
+let S = {
+  mode:'demo', currentUser:null, bookings:{}, custom:{},
+  tab:'dashboard', day:0, sugTab:'dining',
+  editMode:false, db:null, auth:null, unsub:null
+};
+
+// ===========================
+//  CONFIG / INIT
+// ===========================
+// Firebase config is hardcoded — no manual setup needed
+const FIREBASE_CFG = {
+  mode: 'firebase',
+  apiKey: 'AIzaSyCcfAncBFtchnqpKXfGjMlczIJYzCtQGBY',
+  authDomain: 'minimoon-2026.firebaseapp.com',
+  projectId: 'minimoon-2026',
+  storageBucket: 'minimoon-2026.firebasestorage.app',
+  messagingSenderId: '478004511818',
+  appId: '1:478004511818:web:77f4b7e6e53976efd612b3'
+};
+
+function getConfig() { return FIREBASE_CFG; }
+
+function init() {
+  S.mode = 'firebase';
+  initFirebase(FIREBASE_CFG);
+}
+
+function saveConfig() {
+  const v = id => document.getElementById(id).value.trim();
+  const [apiKey,authDomain,projectId,appId] = ['cfg-apiKey','cfg-authDomain','cfg-projectId','cfg-appId'].map(v);
+  const err = $('setup-error');
+  if (!apiKey||!authDomain||!projectId||!appId) { err.style.display='block'; return; }
+  err.style.display='none';
+  const cfg={mode:'firebase',apiKey,authDomain,projectId,appId,storageBucket:projectId+'.appspot.com',messagingSenderId:'',measurementId:''};
+  localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg));
+  S.mode='firebase'; initFirebase(cfg);
+}
+
+function useDemoMode() {
+  localStorage.setItem(CONFIG_KEY,JSON.stringify({mode:'demo'}));
+  S.mode='demo'; checkDemoUser();
+}
+
+// ===========================
+//  FIREBASE
+// ===========================
+function initFirebase(cfg) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    S.auth=firebase.auth(); S.db=firebase.firestore();
+    $('demo-login').style.display='none'; $('firebase-login').style.display='block';
+    S.auth.onAuthStateChanged(u => {
+      if (u) { const uid=u.email==='dylan@golocalvr.com'?'dylan':'meggie'; loginFbUser(uid); }
+      else showScreen('login-screen');
+    });
+  } catch(e) { alert('Firebase error: '+e.message); showScreen('setup-screen'); }
+}
+
+function firebaseLogin() {
+  const email=$('login-email').value.trim(), pw=$('login-password').value, err=$('login-error');
+  err.style.display='none';
+  if (!email||!pw) { err.style.display='block'; err.textContent='Please enter email and password.'; return; }
+  S.auth.signInWithEmailAndPassword(email,pw).catch(e=>{ err.style.display='block'; err.textContent=e.message; });
+}
+
+function loginFbUser(uid) {
+  S.currentUser=uid;
+  subscribeFb();
+  bootApp();
+}
+
+function subscribeFb() {
+  if (S.unsub) S.unsub();
+  S.unsub=S.db.collection('minimoon').doc('state').onSnapshot(doc=>{
+    if (doc.exists) {
+      const d=doc.data();
+      S.bookings=d.bookings||{};
+      S.custom=d.custom||{};
+      refreshAll();
+    }
+  });
+}
+
+function saveFb() {
+  if (S.db) S.db.collection('minimoon').doc('state').set({ bookings:S.bookings, custom:S.custom });
+}
+
+// ===========================
+//  DEMO AUTH
+// ===========================
+let selectedDemo=null;
+
+function selectDemoUser(uid) {
+  selectedDemo=uid;
+  $('btn-dylan').classList.toggle('selected',uid==='dylan');
+  $('btn-meggie').classList.toggle('selected',uid==='meggie');
+}
+
+function demoLogin() {
+  if (!selectedDemo) { showToast('Select Dylan or Meggie first!'); return; }
+  localStorage.setItem(USER_KEY,selectedDemo);
+  S.currentUser=selectedDemo;
+  S.bookings=lsGet(BOOKINGS_KEY)||{};
+  S.custom=lsGet(CUSTOM_KEY)||{};
+  bootApp();
+}
+
+function checkDemoUser() {
+  const u=localStorage.getItem(USER_KEY);
+  if (u&&USERS[u]) { S.currentUser=u; S.bookings=lsGet(BOOKINGS_KEY)||{}; S.custom=lsGet(CUSTOM_KEY)||{}; bootApp(); }
+  else { $('demo-login').style.display='block'; $('firebase-login').style.display='none'; showScreen('login-screen'); }
+}
+
+// ===========================
+//  SAVE / LOAD HELPERS
+// ===========================
+function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } }
+function lsSet(k,v) { localStorage.setItem(k,JSON.stringify(v)); }
+
+function save() {
+  if (S.mode==='firebase') saveFb();
+  else { lsSet(BOOKINGS_KEY,S.bookings); lsSet(CUSTOM_KEY,S.custom); }
+}
+
+// ===========================
+//  CUSTOMIZATION HELPERS
+// ===========================
+function getDayCustom(dayId) { return S.custom[dayId] || {}; }
+
+function getActivities(dayId) {
+  const day = TRIP.days.find(d=>d.id===dayId);
+  if (!day) return [];
+  const c = getDayCustom(dayId);
+  const hidden = c.hidden || [];
+  const added = c.added || [];
+  const edits = c.edits || {};
+  const order = c.order;
+
+  let acts = day.activities
+    .filter(a => !hidden.includes(a.id))
+    .map(a => ({ ...a, ...(edits[a.id]||{}) }));
+
+  // Add custom activities
+  acts = [...acts, ...added];
+
+  // Apply custom order if set
+  if (order && order.length) {
+    const map = Object.fromEntries(acts.map(a=>[a.id,a]));
+    acts = order.filter(id=>map[id]).map(id=>map[id]);
+    // Append any not in order list
+    const ordered = new Set(order);
+    acts = [...acts, ...day.activities.filter(a=>!ordered.has(a.id)&&!hidden.includes(a.id)).map(a=>({...a,...(edits[a.id]||{})}))];
+  }
+
+  return acts;
+}
+
+function getActivityOrder(dayId) {
+  return getActivities(dayId).map(a=>a.id);
+}
+
+// ===========================
+//  BOOT APP
+// ===========================
+function bootApp() {
+  const u=USERS[S.currentUser];
+  $('user-avatar').textContent=u.initial;
+  initCountdowns();
+  // Apply dashboard hero photo
+  const dh=$('dashboard-hero');
+  if (dh&&PHOTOS.dashboard) dh.style.backgroundImage=`url('${PHOTOS.dashboard}')`;
+  renderDashboard(); renderItinerary(); renderBookings(); renderSuggestions(); renderBudget();
+  showScreen('app-screen');
+}
+
+function refreshAll() { renderDashboard(); renderBookings(); renderItineraryDay(S.day); updateBadges(); }
+
+// ===========================
+//  NAVIGATION
+// ===========================
+function navigate(tab) {
+  S.tab=tab;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  $('page-'+tab).classList.add('active');
+  $('nav-'+tab).classList.add('active');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+// ===========================
+//  EDIT MODE
+// ===========================
+function toggleEditMode() {
+  S.editMode=!S.editMode;
+  const btn=$('edit-toggle-btn'), banner=$('edit-banner');
+  btn.classList.toggle('active',S.editMode);
+  btn.textContent=S.editMode?'✅ Done':'✏️ Edit';
+  banner.classList.toggle('visible',S.editMode);
+  renderItineraryDay(S.day);
+}
+
+// ===========================
+//  COUNTDOWNS
+// ===========================
+function initCountdowns() {
+  const now=new Date(), wedding=new Date('2026-06-06'), moon=new Date('2026-06-07');
+  const wd=Math.ceil((wedding-now)/86400000), md=Math.ceil((moon-now)/86400000);
+  $('countdown-wedding').textContent=wd>0?wd:'🎉';
+  $('countdown-minimoon').textContent=md>0?md:'🌊';
+  updateBookedCount();
+}
+
+function updateBookedCount() {
+  const n=BOOKING_ITEMS.filter(b=>S.bookings[b.id]?.done).length;
+  const el=$('booked-count'); if(el) el.textContent=`${n}/${BOOKING_ITEMS.length}`;
+}
+
+// ===========================
+//  DASHBOARD
+// ===========================
+function renderDashboard() {
+  updateBookedCount();
+  const pb=$('progress-bars');
+  if (!pb) return;
+  const cats=['Atlantic City','Cape May'];
+  let bars='';
+  cats.forEach(c=>{
+    const items=BOOKING_ITEMS.filter(b=>b.category===c);
+    const done=items.filter(b=>S.bookings[b.id]?.done).length;
+    const pct=items.length?(done/items.length*100):0;
+    bars+=`<div class="progress-row">
+      <div class="progress-label"><span>${c}</span><span>${done}/${items.length} booked</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+  const total=BOOKING_ITEMS.filter(b=>S.bookings[b.id]?.done).length;
+  const pct=BOOKING_ITEMS.length?(total/BOOKING_ITEMS.length*100):0;
+  bars+=`<div class="progress-row">
+    <div class="progress-label"><span>Overall</span><span>${total}/${BOOKING_ITEMS.length}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+  pb.innerHTML=bars;
+
+  const tl=$('trip-timeline');
+  if (!tl) return;
+  const events=[
+    {title:'Ocean Casino Check-in',       date:'Sun Jun 7',  booked:S.bookings['book_ocean_room']?.done},
+    {title:'Atlantic City Beach Day',      date:'Mon Jun 8',  booked:true},
+    {title:'Sea Isle City + Cape May Arrival',date:'Tue Jun 9', booked:true},
+    {title:'Lighthouse, Whale Watch & Winery',date:'Wed Jun 10',booked:false},
+    {title:'Beach Plum Farm Dinner ✅',   date:'Thu Jun 11', booked:true},
+    {title:'Farewell Cape May',            date:'Fri Jun 12', booked:true}
+  ];
+  tl.innerHTML=events.map(e=>`<div class="timeline-item">
+    <div class="tl-dot ${e.booked?'booked':'needs'}"></div>
+    <div class="tl-info"><div class="tl-title">${e.title}</div><div class="tl-date">${e.date}</div></div>
+  </div>`).join('');
+  updateBadges();
+}
+
+function updateBadges() {
+  const n=BOOKING_ITEMS.filter(b=>!S.bookings[b.id]?.done).length;
+  const badge=$('bookings-badge');
+  if (badge) { badge.textContent=n; badge.style.display=n>0?'block':'none'; }
+}
+
+// ===========================
+//  ITINERARY
+// ===========================
+function renderItinerary() {
+  const tabs=$('day-tabs-container');
+  tabs.innerHTML=TRIP.days.map((d,i)=>`
+    <div class="day-tab ${i===0?'active':''}" onclick="selectDay(${i})">
+      <div class="day-tab-date">${d.shortDate}</div>
+      <div class="day-tab-day">${d.dayName.slice(0,3)}</div>
+    </div>`).join('');
+  renderItineraryDay(0);
+}
+
+function selectDay(i) {
+  S.day=i;
+  document.querySelectorAll('.day-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  renderItineraryDay(i);
+}
+
+function renderItineraryDay(idx) {
+  const day=TRIP.days[idx];
+  const cont=$('day-detail-container');
+  if (!cont||!day) return;
+
+  const hotelBadge = day.hotel.status==='booked'
+    ? `<span class="hotel-pill">✅ ${day.hotel.name}</span>`
+    : day.hotel.status==='needs_booking'
+    ? `<a href="${day.hotel.url||'#'}" target="_blank"><span class="hotel-pill">⚠️ ${day.hotel.name} — Book Now</span></a>`
+    : `<span class="hotel-pill">🏠 ${day.hotel.name}</span>`;
+
+  const acts=getActivities(day.id);
+  const editMode=S.editMode;
+
+  const actHTML=acts.map((a,i)=>{
+    const bk=S.bookings[a.id]||{};
+    const checked=bk.done;
+    const who=bk.by?` — checked by ${USERS[bk.by]?.name}`:'';
+    const isAuto=a.status==='auto';
+    const displayStatus=checked?'booked':a.status;
+
+    const cm=COST_MAP[a.id];
+    const costBadge=cm&&cm.label&&cm.label!=='—'
+      ?`<span class="cost-badge ${cm.cls||''}" title="${cm.tip||''}">${cm.label}</span>`:'';
+
+    const checkEl=isAuto?`<div style="width:22px;height:22px;flex-shrink:0;margin-top:1px;font-size:1rem;display:flex;align-items:center;justify-content:center">📌</div>`
+      :`<div class="activity-check ${checked?'checked':''}" onclick="toggleAct('${day.id}','${a.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>`;
+
+    const editControls=editMode&&!isAuto?`
+      <div class="edit-controls">
+        <button class="ec-btn" onclick="moveAct('${day.id}','${a.id}',-1)" title="Move up">↑</button>
+        <button class="ec-btn" onclick="moveAct('${day.id}','${a.id}',1)"  title="Move down">↓</button>
+        <button class="ec-btn" onclick="openEditAct('${day.id}','${a.id}')" title="Edit">✏️</button>
+        <button class="ec-btn danger" onclick="removeAct('${day.id}','${a.id}')" title="Remove">✕</button>
+      </div>`:editMode&&isAuto?`<div class="edit-controls"><div style="font-size:.65rem;color:var(--text-light);text-align:center">Fixed</div></div>`:'';;
+
+    return `<div class="activity-item status-${displayStatus} ${editMode?'edit-mode':''}">
+      ${checkEl}
+      <div class="activity-info">
+        <div class="activity-title ${checked?'checked':''}">${a.title}</div>
+        <div class="activity-meta">
+          ${a.time?`<span class="activity-time">🕐 ${a.time}</span>`:''}
+          <span class="activity-type type-${a.type||'custom'}">${formatType(a.type)}</span>
+          ${costBadge}
+        </div>
+        <div class="activity-notes">${a.notes||''}</div>
+        ${checked&&who?`<div class="activity-who">✅${who}</div>`:''}
+      </div>
+      ${editControls}
+    </div>`;
+  }).join('');
+
+  // Add activity button (edit mode)
+  const addBtn=editMode?`<button class="ec-add-btn" onclick="openAddAct('${day.id}')">＋ Add custom activity</button>`:'';
+
+  // Bonus / If Time Permits section
+  const bonusId='bonus-'+day.id;
+  const bonusHTML=day.bonus?`
+    <div class="bonus-section">
+      <button class="bonus-toggle" id="${bonusId}-toggle" onclick="toggleBonus('${day.id}')">
+        <span>⏱️ If Time Permits — ${day.bonus.length} bonus ideas for this day</span>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="bonus-items" id="${bonusId}-items">
+        ${day.bonus.map(b=>`<div class="bonus-item">
+          <div class="bonus-icon">${b.icon}</div>
+          <div class="bonus-info">
+            <div class="bonus-name">${b.name}</div>
+            <div class="bonus-desc">${b.desc}</div>
+            <button class="bonus-add-btn" onclick="addBonusToDay('${day.id}','${encodeURIComponent(JSON.stringify(b))}')">＋ Add to my itinerary</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`:'';
+
+  const photo=PHOTOS[day.id]||'';
+  const photoBg=photo?`style="background-image:url('${photo}')":``;
+
+  cont.innerHTML=`<div class="day-detail">
+    <div class="day-hero" ${photoBg}>
+      <div class="day-hero-content">
+        <div class="day-num">Day ${idx+1} · ${day.dayName}, June ${7+idx}, 2026</div>
+        <div class="day-title">${day.title}</div>
+        <div class="day-location">📍 ${day.location}</div>
+        ${hotelBadge}
+      </div>
+    </div>
+    <div class="activity-list">${actHTML}${addBtn}</div>
+    ${bonusHTML}
+  </div>`;
+}
+
+function toggleBonus(dayId) {
+  const toggle=$('bonus-'+dayId+'-toggle'), items=$('bonus-'+dayId+'-items');
+  toggle.classList.toggle('open');
+  items.classList.toggle('open');
+}
+
+function addBonusToDay(dayId, encoded) {
+  const b=JSON.parse(decodeURIComponent(encoded));
+  const c=getDayCustom(dayId);
+  const added=c.added||[];
+  const newAct={ id:'bonus_'+Date.now(), title:b.icon+' '+b.name, type:'suggestion', status:'suggestion', time:'', notes:b.desc };
+  S.custom[dayId]={ ...c, added:[...added, newAct] };
+  save(); renderItineraryDay(S.day); showToast('Added to your itinerary!');
+}
+
+// ===========================
+//  ACTIVITY INTERACTIONS
+// ===========================
+function toggleAct(dayId, actId) {
+  if (S.editMode) { openEditAct(dayId, actId); return; }
+  const cur=S.bookings[actId]||{}, nowDone=!cur.done;
+  S.bookings[actId]={ ...cur, done:nowDone, by:nowDone?S.currentUser:null, at:nowDone?new Date().toISOString():null };
+  save(); renderItineraryDay(S.day); renderDashboard();
+  showToast(nowDone?'✅ Marked as booked!':'↩️ Unmarked');
+}
+
+function moveAct(dayId, actId, dir) {
+  const c=getDayCustom(dayId);
+  const order=getActivityOrder(dayId);
+  const i=order.indexOf(actId);
+  if (i<0) return;
+  const ni=i+dir;
+  if (ni<0||ni>=order.length) return;
+  [order[i],order[ni]]=[order[ni],order[i]];
+  S.custom[dayId]={ ...c, order };
+  save(); renderItineraryDay(S.day); showToast('Moved!');
+}
+
+function removeAct(dayId, actId) {
+  const c=getDayCustom(dayId);
+  // If it's a custom-added activity, remove from added array
+  const added=(c.added||[]).filter(a=>a.id!==actId);
+  // If it's a base activity, add to hidden
+  const isBase=TRIP.days.find(d=>d.id===dayId)?.activities.find(a=>a.id===actId);
+  const hidden=isBase?[...(c.hidden||[]),actId]:(c.hidden||[]);
+  S.custom[dayId]={ ...c, hidden, added };
+  save(); renderItineraryDay(S.day); showToast('Removed from itinerary');
+}
+
+// ===========================
+//  EDIT ACTIVITY MODAL
+// ===========================
+function openEditAct(dayId, actId) {
+  const day=TRIP.days.find(d=>d.id===dayId);
+  const acts=getActivities(dayId);
+  const a=acts.find(a=>a.id===actId)||{};
+  openModal(`
+    <h3>✏️ Edit Activity</h3>
+    <div class="modal-row"><label>Title</label><input id="ea-title" value="${escHtml(a.title||'')}" /></div>
+    <div class="modal-row"><label>Time</label><input id="ea-time" value="${escHtml(a.time||'')}" placeholder="e.g. 7:00 PM" /></div>
+    <div class="modal-row"><label>Type</label><select id="ea-type">
+      ${['dining','hotel','relaxation','entertainment','sightseeing','adventure','nightlife','custom'].map(t=>`<option value="${t}" ${a.type===t?'selected':''}>${formatType(t)}</option>`).join('')}
+    </select></div>
+    <div class="modal-row"><label>Status</label><select id="ea-status">
+      <option value="booked" ${a.status==='booked'?'selected':''}>✅ Booked</option>
+      <option value="needs_booking" ${a.status==='needs_booking'?'selected':''}>⚠️ Needs Booking</option>
+      <option value="suggestion" ${a.status==='suggestion'?'selected':''}>💡 Suggestion</option>
+    </select></div>
+    <div class="modal-row"><label>Notes</label><textarea id="ea-notes">${escHtml(a.notes||'')}</textarea></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="mbtn mbtn-primary" onclick="saveEditAct('${dayId}','${actId}')">Save Changes</button>
+    </div>`);
+}
+
+function saveEditAct(dayId, actId) {
+  const c=getDayCustom(dayId);
+  const edits=c.edits||{};
+  const isBase=TRIP.days.find(d=>d.id===dayId)?.activities.find(a=>a.id===actId);
+  if (isBase) {
+    edits[actId]={ title:$v('ea-title'), time:$v('ea-time'), type:$v('ea-type'), notes:$v('ea-notes'), status:$v('ea-status') };
+    S.custom[dayId]={ ...c, edits };
+  } else {
+    // Custom activity edit — update in added array
+    const added=(c.added||[]).map(a=>a.id===actId?{ ...a, title:$v('ea-title'), time:$v('ea-time'), type:$v('ea-type'), notes:$v('ea-notes'), status:$v('ea-status') }:a);
+    S.custom[dayId]={ ...c, added };
+  }
+  save(); closeModal(); renderItineraryDay(S.day); showToast('Activity updated!');
+}
+
+// ===========================
+//  ADD ACTIVITY MODAL
+// ===========================
+function openAddAct(dayId) {
+  const day=TRIP.days.find(d=>d.id===dayId);
+  openModal(`
+    <h3>＋ Add Activity</h3>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Add a custom activity to <strong>${day?.title}</strong></p>
+    <div class="modal-row"><label>Title</label><input id="na-title" placeholder="e.g. Dinner at..." /></div>
+    <div class="modal-row"><label>Time</label><input id="na-time" placeholder="e.g. 7:00 PM" /></div>
+    <div class="modal-row"><label>Type</label><select id="na-type">
+      ${['dining','relaxation','sightseeing','entertainment','adventure','nightlife','hotel','custom'].map(t=>`<option value="${t}">${formatType(t)}</option>`).join('')}
+    </select></div>
+    <div class="modal-row"><label>Status</label><select id="na-status">
+      <option value="needs_booking">⚠️ Needs Booking</option>
+      <option value="suggestion">💡 Suggestion</option>
+      <option value="booked">✅ Already Booked</option>
+    </select></div>
+    <div class="modal-row"><label>Notes</label><textarea id="na-notes" placeholder="Add any details, tips, links..."></textarea></div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="mbtn mbtn-primary" onclick="saveNewAct('${dayId}')">Add to Itinerary</button>
+    </div>`);
+}
+
+function saveNewAct(dayId) {
+  const title=$v('na-title').trim();
+  if (!title) { showToast('Please enter a title'); return; }
+  const c=getDayCustom(dayId);
+  const newAct={ id:'custom_'+Date.now(), title, time:$v('na-time'), type:$v('na-type'), status:$v('na-status'), notes:$v('na-notes') };
+  S.custom[dayId]={ ...c, added:[...(c.added||[]), newAct] };
+  save(); closeModal(); renderItineraryDay(S.day); showToast('Activity added!');
+}
+
+// ===========================
+//  BOOKINGS
+// ===========================
+function renderBookings() {
+  const cont=$('bookings-container');
+  if (!cont) return;
+  let html='';
+
+  html+=`<div style="margin:16px 0 8px"><div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--navy)">Booking Checklist</div><div style="font-size:.8rem;color:var(--text-muted);margin-top:2px">Check off each item as you book it — both of you will see the update</div></div>`;
+
+  html+=`<div class="section-label">Already Booked ✅</div>`;
+  html+=ALREADY_BOOKED.map(b=>`<div class="booking-item booked">
+    <div class="booking-check checked"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="booking-info"><div class="booking-title">${b.title}</div><div class="booking-detail">${b.detail}</div></div>
+  </div>`).join('');
+
+  ['Atlantic City','Cape May'].forEach(cat=>{
+    html+=`<div class="section-label">${cat} — To Book</div>`;
+    BOOKING_ITEMS.filter(b=>b.category===cat).forEach(b=>{
+      const bk=S.bookings[b.id]||{};
+      const done=bk.done;
+      const who=bk.by?`Booked by ${USERS[bk.by]?.name} · ${fmtDate(bk.at)}`:null;
+      const pClass='priority-'+(b.priority==='high'?'high':b.priority==='med'?'med':'low');
+      const pLabel=b.priority==='high'?'Urgent':b.priority==='med'?'Book Soon':'When Ready';
+      html+=`<div class="booking-item ${done?'booked':''}">
+        <div class="booking-check ${done?'checked':''}" onclick="toggleBooking('${b.id}')">
+          ${done?`<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+        </div>
+        <div class="booking-info">
+          <div class="booking-title ${done?'done':''}">${b.title}</div>
+          <div class="booking-detail">${b.detail}</div>
+          ${done&&who?`<div class="booking-who">✅ ${who}</div>`:''}
+          ${b.link?`<a class="booking-link" href="${b.link}" target="_blank">🔗 Open booking site →</a>`:''}
+        </div>
+        ${!done?`<div class="booking-priority ${pClass}">${pLabel}</div>`:''}
+      </div>`;
+    });
+  });
+  cont.innerHTML=html;
+  updateBadges();
+}
+
+function toggleBooking(id) {
+  const cur=S.bookings[id]||{}, nowDone=!cur.done;
+  S.bookings[id]={ ...cur, done:nowDone, by:nowDone?S.currentUser:null, at:nowDone?new Date().toISOString():null };
+  save(); renderBookings(); renderDashboard();
+  showToast(nowDone?'✅ Booked!':'↩️ Marked as not booked');
+}
+
+// ===========================
+//  SUGGESTIONS
+// ===========================
+const SUG_TABS={ dining:'🍽️ Dining', nightlife:'🌙 Nightlife', activities:'🎯 Activities', 'if-time-permits':'⏱️ If Time Permits' };
+
+function renderSuggestions() {
+  const tabs=$('sug-tabs');
+  if (!tabs) return;
+  tabs.innerHTML=Object.entries(SUG_TABS).map(([k,v])=>
+    `<div class="sug-tab ${k===S.sugTab?'active':''}" onclick="selectSugTab('${k}')">${v}</div>`
+  ).join('');
+  renderSugContent();
+}
+
+function selectSugTab(tab) {
+  S.sugTab=tab;
+  document.querySelectorAll('.sug-tab').forEach((t,i)=>{
+    t.classList.toggle('active',Object.keys(SUG_TABS)[i]===tab);
+  });
+  renderSugContent();
+}
+
+function renderSugContent() {
+  const el=$('sug-content');
+  if (!el) return;
+  const items=SUGGESTIONS[S.sugTab]||[];
+  el.innerHTML=items.map(s=>{
+    const encoded=encodeURIComponent(JSON.stringify({name:s.name,location:s.location,desc:s.desc,tab:S.sugTab}));
+    return `<div class="suggestion-card">
+      <div class="sug-header">
+        <div><div class="sug-name">${s.name}</div><div class="sug-location">📍 ${s.location}</div></div>
+        <div class="sug-badge">${s.badge}</div>
+      </div>
+      <div class="sug-desc">${s.desc}</div>
+      <div class="sug-tags">${s.tags.map(t=>`<span class="sug-tag">${t}</span>`).join('')}</div>
+      ${s.cost?`<div class="sug-cost">💰 ${s.cost}</div>`:''}
+      <div class="sug-add-row">
+        <button class="sug-add-btn" onclick="openAddSugToItinerary('${encoded}')">＋ Add to Itinerary</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===========================
+//  ADD SUGGESTION TO ITINERARY
+// ===========================
+function openAddSugToItinerary(encoded) {
+  const s=JSON.parse(decodeURIComponent(encoded));
+  // Infer activity type from which tab the suggestion came from
+  const typeMap={dining:'dining',nightlife:'nightlife',activities:'sightseeing','if-time-permits':'suggestion'};
+  const inferredType=typeMap[s.tab]||'suggestion';
+
+  const dayOptions=TRIP.days.map((d,i)=>
+    `<option value="${d.id}">${d.shortDate} — ${d.title}</option>`
+  ).join('');
+
+  openModal(`
+    <h3>＋ Add to Itinerary</h3>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:18px">Adding: <strong>${s.name}</strong></p>
+    <div class="modal-row">
+      <label>Which Day?</label>
+      <select id="ati-day">${dayOptions}</select>
+    </div>
+    <div class="modal-row">
+      <label>Time (optional)</label>
+      <input id="ati-time" placeholder="e.g. 7:00 PM, Afternoon, Late Night" />
+    </div>
+    <div class="modal-row">
+      <label>Status</label>
+      <select id="ati-status">
+        <option value="needs_booking">⚠️ Needs Booking</option>
+        <option value="suggestion">💡 Keep as Suggestion</option>
+        <option value="booked">✅ Already Booked</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>Notes (optional — pre-filled from suggestion)</label>
+      <textarea id="ati-notes">${escHtml(s.desc)}</textarea>
+    </div>
+    <div class="modal-btn-row">
+      <button class="mbtn mbtn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="mbtn mbtn-primary" onclick="saveSugToItinerary('${encoded}','${inferredType}')">Add to Itinerary →</button>
+    </div>`);
+}
+
+function saveSugToItinerary(encoded, inferredType) {
+  const s=JSON.parse(decodeURIComponent(encoded));
+  const dayId=$v('ati-day');
+  const time=$v('ati-time');
+  const status=$v('ati-status');
+  const notes=$v('ati-notes');
+
+  const c=getDayCustom(dayId);
+  const newAct={
+    id:'sug_'+Date.now(),
+    title:s.name,
+    type:inferredType,
+    status,
+    time,
+    notes: notes || `${s.desc} · ${s.location}`
+  };
+  S.custom[dayId]={ ...c, added:[...(c.added||[]), newAct] };
+  save();
+  closeModal();
+
+  // Navigate to that day in itinerary and show it
+  const dayIdx=TRIP.days.findIndex(d=>d.id===dayId);
+  const dayName=TRIP.days[dayIdx]?.title||'';
+  showToast(`✅ "${s.name}" added to ${TRIP.days[dayIdx]?.shortDate}!`);
+
+  // Offer to jump to that day
+  setTimeout(()=>{
+    navigate('itinerary');
+    selectDay(dayIdx);
+  }, 600);
+}
+
+// ===========================
+//  USER MENU
+// ===========================
+function showUserMenu() {
+  const u=USERS[S.currentUser];
+  openModal(`
+    <h3>${u.emoji} ${u.name}</h3>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px">Signed in as <strong>${u.name}</strong>${S.mode==='firebase'?' (synced)':' (demo mode)'}</p>
+    <div class="modal-actions">
+      <button class="mbtn mbtn-secondary" onclick="closeModal();showScreen('setup-screen')">⚙️ Firebase Settings</button>
+      <button class="mbtn mbtn-danger" onclick="logout()">Sign Out</button>
+    </div>`);
+}
+
+function logout() {
+  closeModal();
+  if (S.mode==='firebase'&&S.auth) S.auth.signOut();
+  else { localStorage.removeItem(USER_KEY); selectedDemo=null; $('btn-dylan').classList.remove('selected'); $('btn-meggie').classList.remove('selected'); showScreen('login-screen'); }
+}
+
+// ===========================
+//  MODAL
+// ===========================
+function openModal(html) { $('modal-body').innerHTML=html; $('modal-overlay').classList.add('open'); }
+function closeModal() { $('modal-overlay').classList.remove('open'); }
+function closeModalOverlay(e) { if (e.target===$('modal-overlay')) closeModal(); }
+
+// ===========================
+//  TOAST
+// ===========================
+function showToast(msg) {
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ===========================
+//  BUDGET
+// ===========================
+function renderBudget() {
+  const el=$('budget-container');
+  if (!el) return;
+
+  const totalEst=BUDGET.estimated;
+  const totalBudget=BUDGET.total;
+  const buffer=totalBudget-totalEst;
+  const pct=Math.min(100,Math.round(totalEst/totalBudget*100));
+
+  const catsHTML=BUDGET.categories.map(cat=>{
+    const catPct=Math.min(100,Math.round(cat.est/totalBudget*100));
+    const itemsHTML=cat.items.map(item=>`
+      <div class="budget-line ${item.booked?'booked':''}">
+        <div class="budget-line-dot" style="background:${cat.color}"></div>
+        <div class="budget-line-info">
+          <div class="budget-line-name">${item.name}</div>
+          <div class="budget-line-note">${item.note}</div>
+        </div>
+        <div class="budget-line-amt">$${item.est.toLocaleString()}</div>
+      </div>`).join('');
+
+    return `<div class="budget-cat-card">
+      <div class="budget-cat-header">
+        <div class="budget-cat-icon">${cat.icon}</div>
+        <div class="budget-cat-name">${cat.name}</div>
+        <div>
+          <span class="budget-cat-total">$${cat.est.toLocaleString()}</span>
+          <span class="budget-cat-pct">${catPct}%</span>
+        </div>
+      </div>
+      <div class="budget-cat-bar">
+        <div class="budget-cat-fill" style="width:${catPct}%;background:${cat.color}"></div>
+      </div>
+      <div class="budget-line-items">
+        ${itemsHTML}
+        <div class="budget-summary-row">
+          <div class="budget-summary-label">${cat.name} total</div>
+          <div class="budget-summary-amt">$${cat.est.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="budget-hero">
+      <div class="budget-hero-label">💍 Minimoon 2026 · Trip Budget</div>
+      <div class="budget-total-row">
+        <div>
+          <div class="budget-total">$${totalBudget.toLocaleString()}</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.6);margin-top:2px">total budget</div>
+        </div>
+        <div style="text-align:right">
+          <div class="budget-total-sub">Estimated spend</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--gold-light)">$${totalEst.toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="budget-main-bar">
+        <div class="budget-main-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="budget-bar-labels">
+        <span>$0</span>
+        <span>${pct}% of budget · $${buffer.toLocaleString()} buffer remaining</span>
+        <span>$${totalBudget.toLocaleString()}</span>
+      </div>
+      <div class="budget-meta-row" style="margin-top:14px">
+        <div class="budget-meta-item">
+          <div class="budget-meta-label">Estimated</div>
+          <div class="budget-meta-value gold">$${totalEst.toLocaleString()}</div>
+        </div>
+        <div class="budget-meta-item">
+          <div class="budget-meta-label">Buffer</div>
+          <div class="budget-meta-value green">$${buffer.toLocaleString()}</div>
+        </div>
+        <div class="budget-meta-item">
+          <div class="budget-meta-label">Nights</div>
+          <div class="budget-meta-value" style="color:#fff">5 nights</div>
+        </div>
+        <div class="budget-meta-item">
+          <div class="budget-meta-label">Per Day</div>
+          <div class="budget-meta-value" style="color:#fff">~$${Math.round(totalEst/6).toLocaleString()}</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--text-muted);background:var(--amber-light);border:1px solid #fcd34d;border-radius:8px;padding:9px 12px;margin-bottom:14px;line-height:1.5">
+      💡 <strong>Note:</strong> Estimates are per couple and exclude alcohol (which is included in dining line items). Mason Cottage rate is an estimate — check your confirmation. Tap any item marked ✅ to see what's already booked.
+    </div>
+    ${catsHTML}`;
+}
+
+// ===========================
+//  UTILS
+// ===========================
+function $(id) { return document.getElementById(id); }
+function $v(id) { return ($(id)||{}).value||''; }
+function fmtDate(iso) { if (!iso) return ''; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatType(t) {
+  const m={dining:'🍽️ Dining',hotel:'🏨 Hotel',relaxation:'🌊 Relax',entertainment:'🎭 Shows',sightseeing:'👀 Sightseeing',adventure:'🚤 Adventure',nightlife:'🌙 Nightlife',auto:'📌 Info',custom:'⭐ Custom',suggestion:'💡 Suggestion'};
+  return m[t]||t;
+}
+
+init();
+</script>
+</body>
+</html>
