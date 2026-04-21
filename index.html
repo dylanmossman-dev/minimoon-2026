@@ -305,6 +305,65 @@
     .mbtn-secondary{background:var(--ivory);color:var(--text-muted);border:1.5px solid var(--border)}
     .mbtn-danger{background:#fee2e2;color:#991b1b}
 
+    /* ROAD TRIP TAB */
+    .rt-hero{background:linear-gradient(135deg,#1a3a2a 0%,#2d5a3d 100%);border-radius:var(--radius-lg);padding:22px 20px;margin-bottom:16px;color:#fff}
+    .rt-hero-label{font-size:.72rem;color:#86efac;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+    .rt-hero-title{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:12px}
+    .rt-stats{display:flex;gap:0;background:rgba(0,0,0,.2);border-radius:10px;overflow:hidden;margin-top:4px}
+    .rt-stat{flex:1;padding:10px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.1)}
+    .rt-stat:last-child{border-right:none}
+    .rt-stat-num{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#86efac;line-height:1}
+    .rt-stat-lbl{font-size:.6rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+
+    .rt-leg{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);margin-bottom:14px;overflow:hidden}
+    .rt-leg-header{padding:16px 18px;display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+    .rt-leg-icon{font-size:1.6rem;flex-shrink:0;margin-top:2px}
+    .rt-leg-info{flex:1}
+    .rt-leg-name{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--navy)}
+    .rt-leg-sub{font-size:.78rem;color:var(--text-muted);margin-top:1px}
+    .rt-leg-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+    .rt-leg-pill{font-size:.67rem;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--ivory);border:1px solid var(--border);color:var(--text-muted)}
+    .rt-leg-chevron{color:var(--text-light);font-size:1rem;transition:transform .2s;flex-shrink:0;margin-top:4px}
+    .rt-leg-body{border-top:1px solid var(--border);padding:16px 18px;display:none}
+    .rt-leg-body.open{display:block}
+
+    .rt-route-viz{display:flex;align-items:center;overflow-x:auto;padding:12px 0 16px;scrollbar-width:none;gap:0;margin-bottom:16px}
+    .rt-route-viz::-webkit-scrollbar{display:none}
+    .rt-stop-node{display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:70px}
+    .rt-dot{width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--navy);flex-shrink:0;margin-bottom:6px}
+    .rt-dot.hotel{box-shadow:0 0 0 2px var(--gold)}
+    .rt-dot.friends{box-shadow:0 0 0 2px var(--sage)}
+    .rt-dot.family{box-shadow:0 0 0 2px var(--blush)}
+    .rt-dot.home{box-shadow:0 0 0 2px var(--navy)}
+    .rt-city{font-size:.65rem;font-weight:700;color:var(--navy);text-align:center;line-height:1.2}
+    .rt-city-state{font-size:.58rem;color:var(--text-muted);text-align:center}
+    .rt-city-tag{font-size:.55rem;padding:1px 5px;border-radius:6px;margin-top:3px;font-weight:600}
+    .rt-city-tag.hotel{background:var(--amber-light);color:#92400e}
+    .rt-city-tag.friends{background:var(--sage-light);color:#3d6b3d}
+    .rt-city-tag.family{background:var(--blush-light);color:#9d4a4a}
+    .rt-city-tag.home{background:#e8f0ff;color:var(--navy-light)}
+    .rt-connector{flex:1;min-width:40px;display:flex;flex-direction:column;align-items:center;padding:0 2px;flex-shrink:0}
+    .rt-connector-line{width:100%;height:2px;background:linear-gradient(90deg,var(--border),var(--border));border-top:2px dashed var(--border);margin-bottom:4px;margin-top:4px}
+    .rt-connector-info{font-size:.55rem;color:var(--text-muted);text-align:center;white-space:nowrap;line-height:1.3}
+
+    .rt-day-card{background:var(--ivory);border-radius:var(--radius);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px}
+    .rt-day-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .rt-day-badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0}
+    .rt-day-title{font-size:.88rem;font-weight:600;color:var(--navy);flex:1}
+    .rt-day-date{font-size:.72rem;color:var(--text-muted)}
+    .rt-day-route{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-muted);margin-bottom:10px;flex-wrap:wrap}
+    .rt-day-route strong{color:var(--navy)}
+    .rt-hotel-card{border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;background:#fff}
+    .rt-hotel-header{padding:10px 14px;display:flex;align-items:flex-start;gap:8px}
+    .rt-hotel-icon{font-size:1.1rem;flex-shrink:0}
+    .rt-hotel-name{font-size:.85rem;font-weight:700;color:var(--navy)}
+    .rt-hotel-vibe{font-size:.75rem;color:var(--text-muted);margin-top:2px;line-height:1.4}
+    .rt-hotel-footer{border-top:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .rt-hotel-est{font-size:.72rem;font-weight:600;color:var(--navy)}
+    .rt-hotel-pet{font-size:.68rem;color:var(--sage);font-weight:500}
+    .rt-hotel-link{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--navy);text-decoration:underline}
+    .rt-hotel-tip{padding:8px 14px;background:var(--amber-light);font-size:.72rem;color:#92400e;line-height:1.5;border-top:1px solid #fcd34d}
+
     /* TOAST */
     .toast{position:fixed;bottom:calc(var(--nav-height) + 14px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.83rem;font-weight:500;opacity:0;transition:all .3s;z-index:2000;white-space:nowrap;box-shadow:var(--shadow-lg)}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -450,6 +509,11 @@
     <div class="page-content" id="budget-container"></div>
   </div>
 
+  <!-- Road Trip -->
+  <div class="page" id="page-roadtrip">
+    <div class="page-content" id="roadtrip-container"></div>
+  </div>
+
   <!-- Bottom Nav -->
   <div class="bottom-nav">
     <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
@@ -472,6 +536,10 @@
     <div class="nav-item" onclick="navigate('budget')" id="nav-budget">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       <span class="nav-label">Budget</span>
+    </div>
+    <div class="nav-item" onclick="navigate('roadtrip')" id="nav-roadtrip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l2-8h14l2 8"/><path d="M5 17h14"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><path d="M12 9V5"/><path d="M10 7h4"/></svg>
+      <span class="nav-label">Road Trip</span>
     </div>
   </div>
 </div>
@@ -755,16 +823,86 @@ const BUDGET = {
 };
 
 // ===========================
+//  ROAD TRIP DATA
+// ===========================
+const ROAD_TRIP = {
+  legs: [
+    { id:'leg1', emoji:'🎪', color:'#2d4070',
+      name:'Denver → Philadelphia', subtitle:'The Wedding Drive',
+      dates:'Sat May 23 – Mon May 25, 2026', totalMiles:1685, drive:'~24.5 hrs total',
+      days:[
+        { num:1, date:'Saturday, May 23', from:'Denver, CO', to:'Columbia, MO',
+          miles:640, time:'~9.5 hrs', route:'I-70 East all the way', stayType:'hotel',
+          hotel:{ name:'Graduate Columbia', icon:'🎓',
+            vibe:'Mizzou campus boutique hotel — vibrant college-town dining, safe and walkable',
+            est:'~$150–180/night', pet:'Small dogs welcome · no pet fee',
+            link:'https://www.graduatehotels.com/columbia/',
+            tip:'Great dog-friendly walk along Broadway St. Loads of restaurants within a few blocks. A hidden gem of a stop on the I-70 corridor.' }},
+        { num:2, date:'Sunday, May 24', from:'Columbia, MO', to:'Pittsburgh, PA',
+          miles:520, time:'~7.5 hrs', route:'I-70 East → I-76 E (PA Turnpike)',stayType:'friends',
+          hotel:{ name:'Staying with friends in Pittsburgh 🏠', icon:'🏠',
+            vibe:'Pittsburgh is wildly underrated — great food, cool neighborhoods, and your friends know it best',
+            est:'No cost', pet:'Check with friends!', link:'',
+            tip:'Backup if friends fall through: Hotel Monaco Pittsburgh (Kimpton property — 100% pet-friendly, no fees, great downtown location near the Strip District).' }},
+        { num:3, date:'Monday, May 25 — Memorial Day', from:'Pittsburgh, PA', to:'Philadelphia, PA',
+          miles:305, time:'~5 hrs', route:'I-376 E → I-76 East (PA Turnpike)',stayType:'family',
+          hotel:{ name:'Staying with family in Philly 🏠', icon:'💍',
+            vibe:'Wedding week begins — you made it!', est:'No cost', pet:'', link:'',
+            tip:'Memorial Day = some traffic on the Turnpike. Leave Pittsburgh before 9am to beat it. Stop at Breezewood for a stretch break (exit 161).' }}
+      ]
+    },
+    { id:'leg2', emoji:'🌿', color:'#3d6b3d',
+      name:'Philadelphia → Madison', subtitle:'Post-Minimoon Drive',
+      dates:'Sat June 13 – Sun June 14, 2026', totalMiles:900, drive:'~13 hrs total',
+      days:[
+        { num:1, date:'Saturday, June 13', from:'Philadelphia, PA', to:'South Bend, IN',
+          miles:575, time:'~9 hrs', route:'I-76 W → I-70 W → I-65 N → US-30 W', stayType:'hotel',
+          hotel:{ name:'Graduate South Bend', icon:'🏈',
+            vibe:'Notre Dame\'s charming college town — walkable, safe, and surprisingly great dining',
+            est:'~$150–200/night', pet:'Dogs welcome · beautiful campus for evening walks',
+            link:'https://www.graduatehotels.com/south-bend/',
+            tip:'Walk the Notre Dame campus after check-in — stunning in June and perfect for a dog walk. Fiddler\'s Hearth Irish pub nearby is a great dinner spot.' }},
+        { num:2, date:'Sunday, June 14', from:'South Bend, IN', to:'Madison, WI',
+          miles:195, time:'~3 hrs', route:'US-31 N → I-90 W',stayType:'family',
+          hotel:{ name:'Staying with family in Madison 🏠', icon:'🦆',
+            vibe:'Arrive fresh and relaxed for your work week on the lakes',
+            est:'No cost', pet:'', link:'',
+            tip:'Short easy drive — enjoy a slow morning in South Bend before heading out. Grab coffee at Rohr\'s in downtown South Bend before hitting the road.' }}
+      ]
+    },
+    { id:'leg3', emoji:'🏔️', color:'#a07830',
+      name:'Madison → Denver', subtitle:'The Journey Home',
+      dates:'Fri June 19 (or Sat June 20) – Sun June 21, 2026', totalMiles:1100, drive:'~15.5 hrs total',
+      days:[
+        { num:1, date:'Friday June 19 (or Saturday June 20)', from:'Madison, WI', to:'Kearney, NE',
+          miles:530, time:'~8 hrs', route:'I-90 W → I-29 S → I-80 W', stayType:'hotel',
+          hotel:{ name:'Younes Conference Center & Hotel', icon:'🌾',
+            vibe:'Nebraska\'s hidden gem — surprisingly upscale, great Platte River walks for your pup',
+            est:'~$100–140/night', pet:'Pet-friendly rooms available · request at booking',
+            link:'https://www.younescenter.com/',
+            tip:'Kearney is a legitimate surprise — good restaurants, safe, walkable near the river. Backup: Grand Island NE is 20 min east with a great Hampton Inn.' }},
+        { num:2, date:'Saturday June 20 (or Sunday June 21)', from:'Kearney, NE', to:'Denver, CO',
+          miles:350, time:'~5.5 hrs', route:'I-80 W → I-76 W',stayType:'home',
+          hotel:{ name:'Home Sweet Home 🏠', icon:'🏔️',
+            vibe:'Welcome back to the mountains — you\'ve earned it',
+            est:'Free!', pet:'', link:'',
+            tip:'Easy final drive through eastern Colorado. On a clear day you\'ll see the Rockies from I-76 well before Denver. Stop in Fort Morgan for a last coffee.' }}
+      ]
+    }
+  ]
+};
+
+// ===========================
 //  PHOTOS  (Unsplash · free to use)
 // ===========================
 const PHOTOS = {
-  dashboard: 'https://images.unsplash.com/photo-1519046904884-53ec45a4b2a5?auto=format&fit=crop&w=1920&q=80',
-  day1: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1920&q=80',
-  day2: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80',
-  day3: 'https://images.unsplash.com/photo-1519046904884-53ec45a4b2a5?auto=format&fit=crop&w=1920&q=80',
-  day4: 'https://images.unsplash.com/photo-1568454537842-d933259bb258?auto=format&fit=crop&w=1920&q=80',
-  day5: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1920&q=80',
-  day6: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1920&q=80',
+  dashboard: 'Reading Terminal Market.jpg',
+  day1: 'OceanCasinoResort.webp',
+  day2: 'OceanCasinoResort.webp',
+  day3: 'sea-isle-city-nj.jpg',
+  day4: 'CapeMayNJ.jpg',
+  day5: 'MasonHouseCapeMay.jpg',
+  day6: 'MasonHouseCapeMay.jpg',
 };
 
 // ===========================
@@ -941,7 +1079,7 @@ function bootApp() {
   // Apply dashboard hero photo
   const dh=$('dashboard-hero');
   if (dh&&PHOTOS.dashboard) dh.style.backgroundImage=`url('${PHOTOS.dashboard}')`;
-  renderDashboard(); renderItinerary(); renderBookings(); renderSuggestions(); renderBudget();
+  renderDashboard(); renderItinerary(); renderBookings(); renderSuggestions(); renderBudget(); renderRoadTrip();
   showScreen('app-screen');
 }
 
@@ -1479,6 +1617,121 @@ function showToast(msg) {
 }
 
 // ===========================
+//  ROAD TRIP
+// ===========================
+function renderRoadTrip() {
+  const el=$('roadtrip-container');
+  if (!el) return;
+
+  const totalMiles=ROAD_TRIP.legs.reduce((s,l)=>s+l.totalMiles,0);
+
+  const legsHTML=ROAD_TRIP.legs.map((leg,li)=>{
+    // Route visualization
+    const nodes=[];
+    leg.days.forEach((d,i)=>{
+      if (i===0) {
+        const [city,st]=d.from.split(', ');
+        nodes.push(`<div class="rt-stop-node">
+          <div class="rt-dot home" style="background:${leg.color}"></div>
+          <div class="rt-city">${city}</div>
+          <div class="rt-city-state">${st}</div>
+        </div>`);
+      }
+      nodes.push(`<div class="rt-connector">
+        <div class="rt-connector-info">${d.miles}mi</div>
+        <div class="rt-connector-line" style="border-color:${leg.color}55"></div>
+        <div class="rt-connector-info">${d.time}</div>
+      </div>`);
+      const [city,st]=d.to.split(', ');
+      const tagMap={hotel:'🏨 Hotel',friends:'🏠 Friends',family:'🏠 Family',home:'🏡 Home'};
+      nodes.push(`<div class="rt-stop-node">
+        <div class="rt-dot ${d.stayType}" style="background:${leg.color}"></div>
+        <div class="rt-city">${city}</div>
+        <div class="rt-city-state">${st}</div>
+        <div class="rt-city-tag ${d.stayType}">${tagMap[d.stayType]||''}</div>
+      </div>`);
+    });
+
+    // Day cards
+    const daysHTML=leg.days.map(d=>{
+      const h=d.hotel;
+      const linkEl=h.link?`<a href="${h.link}" target="_blank" class="rt-hotel-link">Book →</a>`:'';
+      const petEl=h.pet?`<span class="rt-hotel-pet">🐾 ${h.pet}</span>`:'';
+      const tipEl=h.tip?`<div class="rt-hotel-tip">💡 ${h.tip}</div>`:'';
+      return `<div class="rt-day-card">
+        <div class="rt-day-header">
+          <div class="rt-day-badge" style="background:${leg.color}">D${d.num}</div>
+          <div style="flex:1">
+            <div class="rt-day-title">${d.from} → ${d.to}</div>
+            <div class="rt-day-date">${d.date}</div>
+          </div>
+        </div>
+        <div class="rt-day-route">
+          <strong>${d.miles} miles</strong> · ${d.time} · <span>${d.route}</span>
+        </div>
+        <div class="rt-hotel-card">
+          <div class="rt-hotel-header">
+            <div class="rt-hotel-icon">${h.icon}</div>
+            <div>
+              <div class="rt-hotel-name">${h.name}</div>
+              <div class="rt-hotel-vibe">${h.vibe}</div>
+            </div>
+          </div>
+          <div class="rt-hotel-footer">
+            <span class="rt-hotel-est">${h.est}</span>
+            ${petEl}${linkEl}
+          </div>
+          ${tipEl}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="rt-leg" id="rt-leg-${li}">
+      <div class="rt-leg-header" onclick="toggleRtLeg(${li})">
+        <div class="rt-leg-icon">${leg.emoji}</div>
+        <div class="rt-leg-info">
+          <div class="rt-leg-name">${leg.name}</div>
+          <div class="rt-leg-sub">${leg.subtitle}</div>
+          <div class="rt-leg-meta">
+            <span class="rt-leg-pill">📅 ${leg.dates}</span>
+            <span class="rt-leg-pill">🛣️ ${leg.totalMiles.toLocaleString()} miles</span>
+            <span class="rt-leg-pill">⏱️ ${leg.drive}</span>
+          </div>
+        </div>
+        <div class="rt-leg-chevron" id="rt-chev-${li}">▾</div>
+      </div>
+      <div class="rt-leg-body" id="rt-body-${li}">
+        <div class="rt-route-viz">${nodes.join('')}</div>
+        ${daysHTML}
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="rt-hero">
+      <div class="rt-hero-label">🐾 Pet-Friendly Road Trip Guide</div>
+      <div class="rt-hero-title">Denver ↔ Philadelphia ↔ Madison</div>
+      <div class="rt-stats">
+        <div class="rt-stat"><div class="rt-stat-num">3</div><div class="rt-stat-lbl">Trip Legs</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">${totalMiles.toLocaleString()}</div><div class="rt-stat-lbl">Total Miles</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">4</div><div class="rt-stat-lbl">Hotel Nights</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">~55h</div><div class="rt-stat-lbl">Total Drive</div></div>
+      </div>
+    </div>
+    <div style="background:var(--sage-light);border:1px solid #a8d5a8;border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#3d6b3d;line-height:1.5">
+      🗺️ <strong>Route strategy:</strong> All legs use major interstates (I-70, I-76, I-80, I-90) for reliability and services. Hotels below are curated for your small dog — pet-friendly confirmed. Tap any leg to expand the full day-by-day plan.
+    </div>
+    ${legsHTML}`;
+}
+
+function toggleRtLeg(i) {
+  const body=$('rt-body-'+i), chev=$('rt-chev-'+i);
+  if (!body) return;
+  const open=body.classList.toggle('open');
+  if (chev) chev.style.transform=open?'rotate(180deg)':'';
+}
+
+// ===========================
 //  BUDGET
 // ===========================
 function renderBudget() {
@@ -1586,4 +1839,3 @@ init();
 </script>
 </body>
 </html>
-
