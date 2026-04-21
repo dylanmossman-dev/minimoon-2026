@@ -1137,7 +1137,7 @@ function renderItineraryDay(idx) {
     </div>`:'';
 
   const photo=PHOTOS[day.id]||'';
-  const photoBg=photo?`style="background-image:url('${photo}')":``;
+  const photoBg=photo?`style="background-image:url('${photo}')"`:'';
 
   cont.innerHTML=`<div class="day-detail">
     <div class="day-hero" ${photoBg}>
