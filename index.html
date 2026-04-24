@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dylan & Meggie · Minimoon 2026</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -363,6 +365,31 @@
     .rt-hotel-pet{font-size:.68rem;color:var(--sage);font-weight:500}
     .rt-hotel-link{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--navy);text-decoration:underline}
     .rt-hotel-tip{padding:8px 14px;background:var(--amber-light);font-size:.72rem;color:#92400e;line-height:1.5;border-top:1px solid #fcd34d}
+    .rt-route-tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+    .rt-route-tab{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:.76rem;font-weight:600;cursor:pointer;background:#fff;color:var(--text-muted);transition:all .15s;display:flex;align-items:center;gap:5px}
+    .rt-route-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+    .rt-casino-badge{font-size:.63rem;font-weight:700;padding:2px 6px;border-radius:8px;background:#fef3c7;color:#92400e;white-space:nowrap}
+    .rt-route-tab.active .rt-casino-badge{background:rgba(255,255,255,.18);color:rgba(255,255,255,.9)}
+    .rt-route-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;padding:10px 12px;border-radius:var(--radius);background:var(--ivory);border:1px solid var(--border)}
+    .rt-compare-item strong{display:block;font-size:.8rem;color:var(--navy);font-weight:700}
+    .rt-compare-item span{font-size:.72rem;color:var(--text-muted)}
+    .rt-dot.casino{background:#D97706!important}
+
+    /* MAP */
+    #rt-map-wrapper{position:relative;background:#e8e4df}
+    #rt-map{height:320px;width:100%;z-index:1}
+    #rt-map-hint{text-align:center;padding:6px 16px;font-size:.73rem;color:var(--text-muted);background:#fff;border-bottom:1px solid var(--border)}
+    #rt-stop-panel{position:fixed;bottom:calc(var(--nav-height) - 2px);left:0;right:0;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.2);transform:translateY(110%);transition:transform .32s cubic-bezier(.34,1.1,.64,1);z-index:600;max-height:68vh;overflow-y:auto;padding-bottom:12px}
+    #rt-stop-panel.open{transform:translateY(0)}
+    .rt-sp-handle{width:40px;height:4px;background:#ddd;border-radius:2px;margin:12px auto 6px}
+    .rt-sp-close{position:absolute;top:10px;right:14px;font-size:1.1rem;color:var(--text-muted);cursor:pointer;background:none;border:none;padding:4px 8px;z-index:10}
+    .rt-sp-inner{padding:0 18px 20px}
+    .rt-sp-city{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--navy);margin-bottom:2px}
+    .rt-sp-dist{font-size:.72rem;color:var(--text-muted);margin-bottom:8px}
+    .rt-sp-tag{display:inline-block;font-size:.67rem;font-weight:700;padding:2px 9px;border-radius:10px;margin-bottom:10px}
+    .rt-sp-why{font-size:.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.55}
+    .rt-sp-hotel-lbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px}
+    .rt-leg-section-hdr{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--navy);margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 
     /* TOAST */
     .toast{position:fixed;bottom:calc(var(--nav-height) + 14px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.83rem;font-weight:500;opacity:0;transition:all .3s;z-index:2000;white-space:nowrap;box-shadow:var(--shadow-lg)}
@@ -511,7 +538,17 @@
 
   <!-- Road Trip -->
   <div class="page" id="page-roadtrip">
+    <div id="rt-map-wrapper">
+      <div id="rt-map"></div>
+      <div id="rt-map-hint">📍 Tap any stop to see hotel options & details</div>
+    </div>
     <div class="page-content" id="roadtrip-container"></div>
+  </div>
+  <!-- Road Trip Stop Panel (slides up from bottom) -->
+  <div id="rt-stop-panel">
+    <div class="rt-sp-handle"></div>
+    <button class="rt-sp-close" onclick="closeRtStop()">✕</button>
+    <div id="rt-stop-content" class="rt-sp-inner"></div>
   </div>
 
   <!-- Bottom Nav -->
@@ -823,71 +860,284 @@ const BUDGET = {
 };
 
 // ===========================
+//  ROAD TRIP STOPS (map pins)
+// ===========================
+const RT_STOPS = [
+  // === LEG 1 & 3 SHARED: Denver ===
+  { id:'denver', city:'Denver, CO', lat:39.739, lng:-104.990, legs:['leg1','leg3'], tag:'home', emoji:'🏠',
+    dist:'', why:'Home base — the start and end of the whole adventure.',
+    hotels:[] },
+
+  // === LEG 1: Denver → Philadelphia ===
+  { id:'ogallala', city:'Ogallala, NE', lat:41.128, lng:-101.720, legs:['leg1'], tag:'stop', emoji:'🛑',
+    dist:'~430 mi from Denver',
+    why:'Solid short-day stop if you want to ease into the trip. Right on I-80 with Ogallala Lake nearby — great for a dog walk. Quiet, cheap, and a hidden gem.',
+    hotels:[
+      { name:'Hampton Inn Ogallala', price:'~$100–140/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.hilton.com', note:'Clean and comfortable. Pool, breakfast included, easy I-80 access.' },
+      { name:'Holiday Inn Express Ogallala', price:'~$85–120/night', pet:'🐾 Pet-friendly · no fee', casino:false, link:'https://www.ihg.com', note:'Reliable chain, right off I-80, good dog-walking area nearby.' }
+    ]
+  },
+  { id:'council_bluffs', city:'Council Bluffs, IA', lat:41.256, lng:-95.934, legs:['leg1','leg3'], tag:'casino', emoji:'🎰',
+    dist:'~540 mi from Denver · ~430 mi from Madison',
+    why:'One of the best I-80 overnight stops on the whole corridor. Omaha\'s Missouri River scene is right across the bridge with an incredible food scene — and Ameristar is a full casino resort you can walk to from I-80.',
+    hotels:[
+      { name:'Ameristar Casino Resort Spa', price:'~$100–160/night', pet:'🐾 Pet-friendly rooms available', casino:true, link:'https://www.ameristar.com/council-bluffs.aspx', note:'Casino + spa + pools + multiple restaurants. Missouri River walk is great for your dog after the drive.' },
+      { name:'La Quinta Omaha/Council Bluffs', price:'~$70–100/night', pet:'🐾 Pet-friendly · no fee', casino:false, link:'https://www.wyndhamhotels.com/laquinta', note:'Budget pick — clean, reliable, 10 min from Omaha\'s Old Market dining scene.' }
+    ]
+  },
+  { id:'des_moines', city:'Des Moines, IA', lat:41.587, lng:-93.625, legs:['leg1'], tag:'city', emoji:'🏙️',
+    dist:'~680 mi from Denver',
+    why:'Surprisingly great city with an amazing food scene, walkable downtown, and the Iowa State Capitol area is stunning for a dog walk. Solid midpoint that doesn\'t feel like a compromise.',
+    hotels:[
+      { name:'Hotel Fort Des Moines (Curio/Hilton)', price:'~$110–170/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.hilton.com', note:'Historic downtown hotel, walkable to restaurants and the river walk.' },
+      { name:'Prairie Meadows Casino Hotel', price:'~$80–140/night', pet:'🐾 Pet-friendly rooms', casino:true, link:'https://www.prairiemeadows.com', note:'Full casino resort 15 min from downtown — slots, dining, good rates for a fun evening.' }
+    ]
+  },
+  { id:'joliet', city:'Joliet, IL', lat:41.525, lng:-88.082, legs:['leg1','leg2'], tag:'casino', emoji:'🎰',
+    dist:'~950 mi from Denver · ~470 mi from Philadelphia',
+    why:'Right off I-80 — Hollywood Casino is literally steps from the interstate, zero backtracking. Chicago is 45 min away if you want a morning city detour before hitting the road.',
+    hotels:[
+      { name:'Hollywood Casino Joliet', price:'~$90–150/night', pet:'🐾 Pet-friendly options nearby', casino:true, link:'https://www.hollywoodcasinojoliet.com', note:'Casino hotel right off I-80. Great evening entertainment, super easy on/off the highway.' },
+      { name:'Comfort Inn Joliet', price:'~$70–105/night', pet:'🐾 Pet-friendly · small fee', casino:false, link:'https://www.choicehotels.com', note:'Budget-friendly, breakfast included, 5 min from Hollywood Casino if you want to play.' }
+    ]
+  },
+  { id:'cleveland', city:'Cleveland, OH', lat:41.499, lng:-81.694, legs:['leg1','leg2'], tag:'casino', emoji:'🎰',
+    dist:'~1,250 mi from Denver · ~430 mi from Philadelphia',
+    why:'Genuinely great city — Rock & Roll Hall of Fame, incredible restaurant scene on East 4th Street, and the Jack Cleveland Casino has a hotel attached downtown. One of the best overnight stops on the whole corridor.',
+    hotels:[
+      { name:'Jack Cleveland Casino Hotel', price:'~$100–180/night', pet:'🐾 Pet-friendly · call ahead', casino:true, link:'https://www.jackcleveland.com', note:'Casino hotel downtown — walk to the Rock Hall, East 4th dining, and the lakefront.' },
+      { name:'Kimpton Schofield Hotel', price:'~$130–200/night', pet:'🐾 100% pet-friendly · no fee', casino:false, link:'https://www.kimptonschofield.com', note:'Stunning 1902 landmark building. Kimpton = gold standard for dog-friendly hotels.' }
+    ]
+  },
+  { id:'pittsburgh', city:'Pittsburgh, PA', lat:40.441, lng:-79.996, legs:['leg1','leg2'], tag:'friends', emoji:'👥',
+    dist:'~1,430 mi from Denver · ~310 mi from Philadelphia',
+    why:'See your Pittsburgh friends and spend time in one of America\'s most underrated cities. Strip District for incredible food, and Hotel Monaco is a short walk away.',
+    hotels:[
+      { name:'Hotel Monaco Pittsburgh (Kimpton)', price:'~$150–220/night', pet:'🐾 No pet fee · no weight limit', casino:false, link:'https://www.monaco-pittsburgh.com', note:'Go-to Pittsburgh stay — downtown, walkable, pet-perfect. Rivers Casino is 5 min away if you want to play.' },
+      { name:'Ace Hotel Pittsburgh', price:'~$130–190/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.acehotel.com/pittsburgh', note:'Stylish boutique in East Liberty. Great vibe, dog-friendly, near excellent restaurants.' }
+    ]
+  },
+  { id:'philadelphia', city:'Philadelphia, PA', lat:39.952, lng:-75.165, legs:['leg1','leg2'], tag:'family', emoji:'💍',
+    dist:'', why:'Wedding week — you made it to Philly!', hotels:[] },
+
+  // === LEG 2: Philadelphia → Madison (extra stops) ===
+  { id:'south_bend', city:'South Bend, IN', lat:41.676, lng:-86.252, legs:['leg2'], tag:'casino', emoji:'🎰',
+    dist:'~575 mi from Philadelphia',
+    why:'Notre Dame\'s college town — walkable, safe, and Four Winds Casino Resort is right here in town. Beautiful campus dog walk in the evening, great dining scene.',
+    hotels:[
+      { name:'Four Winds Casino Resort', price:'~$130–200/night', pet:'🐾 Pet-friendly · confirm at booking', casino:true, link:'https://www.fourwindscasino.com/southbend', note:'South Bend\'s own casino resort. Walkable to Notre Dame campus for an evening dog stroll.' },
+      { name:'Graduate South Bend', price:'~$120–180/night', pet:'🐾 Dogs welcome', casino:false, link:'https://www.graduatehotels.com/south-bend', note:'Fun Notre Dame-themed boutique hotel in a great walkable location.' }
+    ]
+  },
+  { id:'madison', city:'Madison, WI', lat:43.073, lng:-89.401, legs:['leg2','leg3'], tag:'family', emoji:'🦆',
+    dist:'', why:'Home base for a few weeks on the lakes — you\'ve arrived!', hotels:[] },
+
+  // === LEG 3: Madison → Denver ===
+  { id:'lacrosse', city:'La Crosse, WI', lat:43.801, lng:-91.240, legs:['leg3'], tag:'stop', emoji:'🌊',
+    dist:'~130 mi from Madison',
+    why:'Beautiful Mississippi River bluffs — a great short first-day stop if you want a gentle start. Even better as a scenic lunch stop on a longer driving day.',
+    hotels:[
+      { name:'Radisson Hotel La Crosse', price:'~$100–155/night', pet:'🐾 Pet-friendly rooms', casino:false, link:'https://www.radissonhotels.com', note:'On the Mississippi River with great bluff views. Short, easy first day.' },
+      { name:'Courtyard La Crosse Downtown', price:'~$105–145/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.marriott.com', note:'Walkable downtown near the riverfront, great for an evening walk.' }
+    ]
+  },
+  { id:'sioux_falls', city:'Sioux Falls, SD', lat:43.544, lng:-96.731, legs:['leg3'], tag:'city', emoji:'🏙️',
+    dist:'~370 mi from Madison',
+    why:'Genuinely great stop — Falls Park is one of the best roadside natural attractions in America (a massive waterfall right in the city). Safe, affordable, and a solid midpoint heading west.',
+    hotels:[
+      { name:'Hotel on Phillips (Autograph/Marriott)', price:'~$110–160/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.marriott.com', note:'Boutique hotel in the heart of downtown Sioux Falls, walkable to Falls Park.' },
+      { name:'Holiday Inn Express & Suites', price:'~$80–120/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.ihg.com', note:'Budget-friendly, breakfast included, easy I-90 access for an early departure.' }
+    ]
+  },
+  { id:'rapid_city', city:'Rapid City, SD', lat:44.080, lng:-103.231, legs:['leg3'], tag:'city', emoji:'🏔️',
+    dist:'~620 mi from Madison',
+    why:'Gateway to the Black Hills — Mount Rushmore is 25 min away, Badlands are an hour east, and the city itself has a great walkable downtown with tons of restaurants.',
+    hotels:[
+      { name:'Hotel Alex Johnson (Curio/Hilton)', price:'~$120–180/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.hilton.com', note:'Gorgeous 1928 historic hotel in downtown Rapid City. Perfect base for a Black Hills morning.' },
+      { name:'Residence Inn Rapid City', price:'~$100–150/night', pet:'🐾 Pet-friendly · fee applies', casino:false, link:'https://www.marriott.com', note:'Great value, suite-style rooms, easy Mount Rushmore access the next morning.' }
+    ]
+  },
+  { id:'deadwood', city:'Deadwood, SD', lat:44.376, lng:-103.729, legs:['leg3'], tag:'casino', emoji:'🎰',
+    dist:'~640 mi from Madison · 20 min from Rapid City',
+    why:'THE bucket-list casino road trip stop — a full Wild West town turned casino destination. Dozens of historic gambling halls, Wild Bill Hickok\'s grave, and the Black Hills right outside. 30 min from Mount Rushmore.',
+    hotels:[
+      { name:'Deadwood Mountain Grand', price:'~$110–190/night', pet:'🐾 Pet options in Deadwood', casino:true, link:'https://www.deadwoodmountaingrand.com', note:'Deadwood\'s premiere casino hotel. Mountain views, multiple casino floors, incredible Wild West atmosphere.' },
+      { name:'Deadwood Gulch Resort', price:'~$85–140/night', pet:'🐾 Very dog-friendly', casino:true, link:'https://www.deadwoodgulch.com', note:'Best pet-friendly option in Deadwood — known for welcoming dogs warmly, with casino on-site.' }
+    ]
+  },
+  { id:'cheyenne', city:'Cheyenne, WY', lat:41.140, lng:-104.820, legs:['leg3'], tag:'stop', emoji:'🤠',
+    dist:'~950 mi from Madison · ~100 mi from Denver',
+    why:'Classic Wyoming cowboy stop — charming downtown, affordable, and only 100 miles from home. Great last night before the final push to Denver.',
+    hotels:[
+      { name:'Little America Hotel Cheyenne', price:'~$90–150/night', pet:'🐾 Pet-friendly · fee applies', casino:false, link:'https://www.littleamerica.com/cheyenne', note:'A Western classic with beautiful grounds and great dog-walking space. Historic and affordable.' },
+      { name:'Fairfield Inn & Suites Cheyenne', price:'~$75–115/night', pet:'🐾 Pet-friendly', casino:false, link:'https://www.marriott.com', note:'Reliable and budget-friendly. Free breakfast, easy I-25 access for a quick final leg home.' }
+    ]
+  }
+];
+
+// Route polylines for the map (approximate highway paths)
+const RT_ROUTE_LINES = [
+  { leg:'leg1', color:'#2d4070', coords:[
+    [39.739,-104.990],[40.2,-103.2],[41.128,-101.720],
+    [41.259,-99.4],[41.256,-95.934],[41.587,-93.625],[41.661,-91.530],
+    [41.525,-88.082],[41.664,-83.555],[41.499,-81.694],
+    [41.100,-80.649],[40.441,-79.996],[39.99,-77.1],[39.952,-75.165]
+  ]},
+  { leg:'leg2', color:'#3d6b3d', coords:[
+    [39.952,-75.165],[40.441,-79.996],[41.499,-81.694],
+    [41.664,-83.555],[41.676,-86.252],[41.525,-88.082],[43.073,-89.401]
+  ]},
+  { leg:'leg3a', color:'#a07830', coords:[
+    [43.073,-89.401],[43.801,-91.240],[43.544,-96.731],
+    [44.080,-103.231],[44.376,-103.729],[41.140,-104.820],[39.739,-104.990]
+  ]},
+  { leg:'leg3b', color:'#c4a060', dashArray:'8,6', coords:[
+    [43.073,-89.401],[42.3,-90.5],[41.587,-93.625],
+    [41.256,-95.934],[40.69,-99.08],[39.739,-104.990]
+  ]}
+];
+
+// ===========================
 //  ROAD TRIP DATA
 // ===========================
 const ROAD_TRIP = {
   legs: [
     { id:'leg1', emoji:'🎪', color:'#2d4070',
       name:'Denver → Philadelphia', subtitle:'The Wedding Drive',
-      dates:'Sat May 23 – Mon May 25, 2026', totalMiles:1685, drive:'~24.5 hrs total',
-      days:[
-        { num:1, date:'Saturday, May 23', from:'Denver, CO', to:'Columbia, MO',
-          miles:640, time:'~9.5 hrs', route:'I-70 East all the way', stayType:'hotel',
-          hotel:{ name:'Graduate Columbia', icon:'🎓',
-            vibe:'Mizzou campus boutique hotel — vibrant college-town dining, safe and walkable',
-            est:'~$150–180/night', pet:'Small dogs welcome · no pet fee',
-            link:'https://www.graduatehotels.com/columbia/',
-            tip:'Great dog-friendly walk along Broadway St. Loads of restaurants within a few blocks. A hidden gem of a stop on the I-70 corridor.' }},
-        { num:2, date:'Sunday, May 24', from:'Columbia, MO', to:'Pittsburgh, PA',
-          miles:520, time:'~7.5 hrs', route:'I-70 East → I-76 E (PA Turnpike)',stayType:'hotel',
-          hotel:{ name:'Hotel Monaco Pittsburgh', icon:'🐾',
-            vibe:'Kimpton property in the heart of downtown — pet-friendly with zero fees and a great location near the Strip District and your Pittsburgh friends',
-            est:'~$150–220/night', pet:'100% pet-friendly · no pet fee · no weight limit',
-            link:'https://www.monaco-pittsburgh.com/',
-            tip:'Mention your dog at check-in — Kimpton properties are famously dog-welcoming (sometimes even have loaner goldfish 🐟). Backup option: Ace Hotel Pittsburgh in East Liberty (~$130–160/night, also pet-friendly). Strip District is a 10-min walk — great brunch and coffee the next morning.' }},
-        { num:3, date:'Monday, May 25 — Memorial Day', from:'Pittsburgh, PA', to:'Philadelphia, PA',
-          miles:305, time:'~5 hrs', route:'I-376 E → I-76 East (PA Turnpike)',stayType:'family',
-          hotel:{ name:'Staying with family in Philly 🏠', icon:'💍',
-            vibe:'Wedding week begins — you made it!', est:'No cost', pet:'', link:'',
-            tip:'Memorial Day = some traffic on the Turnpike. Leave Pittsburgh before 9am to beat it. Stop at Breezewood for a stretch break (exit 161).' }}
+      dates:'Sat May 23 – Mon May 25, 2026',
+      routes:[
+        { id:'i80', label:'I-80 Northern', badge:'🎰 2 Casino Stops', miles:1526, drive:'~22.5 hrs',
+          via:'I-76 → Council Bluffs → Pittsburgh',
+          days:[
+            { num:1, date:'Saturday, May 23', from:'Denver, CO', to:'Council Bluffs, IA',
+              miles:541, time:'~8 hrs', route:'I-76 E → I-80 E', stayType:'casino',
+              hotel:{ name:'Ameristar Casino Resort Spa', icon:'🎰',
+                vibe:'Right on the Missouri River — full casino resort with spa, pools, and multiple restaurants. One of the best pull-off-the-highway casino stays in the Midwest.',
+                est:'~$100–160/night', pet:'Pet-friendly rooms available · request at booking',
+                link:'https://www.ameristar.com/council-bluffs.aspx',
+                tip:'Ameristar Council Bluffs is a full destination — river walk is perfect for your dog after the drive, and the casino floor is great for a post-dinner evening. Leave Denver by 8am to arrive comfortably.' }},
+            { num:2, date:'Sunday, May 24', from:'Council Bluffs, IA', to:'Pittsburgh, PA',
+              miles:685, time:'~9.5 hrs', route:'I-80 E → I-76 PA Tpke S into Pittsburgh', stayType:'hotel',
+              hotel:{ name:'Hotel Monaco Pittsburgh', icon:'🐾',
+                vibe:'Kimpton downtown Pittsburgh — zero pet fees, Strip District is 10 min away, and your Pittsburgh friends are right there.',
+                est:'~$150–220/night', pet:'100% pet-friendly · no pet fee · no weight limit',
+                link:'https://www.monaco-pittsburgh.com/',
+                tip:'Leave Council Bluffs by 7:30am to arrive for dinner. Kimpton properties famously love dogs — sometimes even have loaner goldfish 🐟. Backup: Ace Hotel Pittsburgh in East Liberty (~$130–160/night).' }},
+            { num:3, date:'Monday, May 25 — Memorial Day', from:'Pittsburgh, PA', to:'Philadelphia, PA',
+              miles:305, time:'~5 hrs', route:'I-376 E → I-76 East (PA Turnpike)', stayType:'family',
+              hotel:{ name:'Staying with family in Philly 🏠', icon:'💍',
+                vibe:'Wedding week begins — you made it!', est:'No cost', pet:'', link:'',
+                tip:'Memorial Day = some Turnpike traffic. Leave Pittsburgh before 9am. Stop at Breezewood for a stretch break (exit 161).' }}
+          ]
+        },
+        { id:'i70', label:'I-70 Central', badge:'🎰 1 Casino Stop', miles:1680, drive:'~24.5 hrs',
+          via:'I-70 → Kansas City → Pittsburgh',
+          days:[
+            { num:1, date:'Saturday, May 23', from:'Denver, CO', to:'Kansas City, MO',
+              miles:600, time:'~8.5 hrs', route:'I-70 East all the way', stayType:'casino',
+              hotel:{ name:'Ameristar Casino Hotel Kansas City', icon:'🎰',
+                vibe:'Right off I-70 on the Missouri River bluffs — full casino resort, multiple restaurants, solid hotel. Perfect I-70 midpoint stop with great KC BBQ scene nearby.',
+                est:'~$110–180/night', pet:'Pet-friendly rooms available · request at booking',
+                link:'https://www.ameristar.com/kansas-city.aspx',
+                tip:'KC is a great overnight — Joe\'s Kansas City BBQ is 20 min away and legendary. Riverboat casino views from the hotel. Leave early Sunday to tackle the long Day 2.' }},
+            { num:2, date:'Sunday, May 24', from:'Kansas City, MO', to:'Pittsburgh, PA',
+              miles:775, time:'~11 hrs', route:'I-70 E → Columbus → I-76 PA Tpke W', stayType:'hotel',
+              hotel:{ name:'Hotel Monaco Pittsburgh', icon:'🐾',
+                vibe:'Long day, but Monaco is worth it — Kimpton with zero pet fees, great downtown location, Pittsburgh friends nearby.',
+                est:'~$150–220/night', pet:'100% pet-friendly · no pet fee · no weight limit',
+                link:'https://www.monaco-pittsburgh.com/',
+                tip:'⚠️ 11-hour day — leave KC by 7:00am. Stop for lunch in Columbus, OH (~5 hrs in). Once you hit the PA Turnpike it\'s a smooth final stretch. Alternative: break at Columbus overnight (adds a night).' }},
+            { num:3, date:'Monday, May 25 — Memorial Day', from:'Pittsburgh, PA', to:'Philadelphia, PA',
+              miles:305, time:'~5 hrs', route:'I-376 E → I-76 East (PA Turnpike)', stayType:'family',
+              hotel:{ name:'Staying with family in Philly 🏠', icon:'💍',
+                vibe:'Wedding week begins — you made it!', est:'No cost', pet:'', link:'',
+                tip:'Memorial Day = some Turnpike traffic. Leave Pittsburgh before 9am. Stop at Breezewood for a stretch break (exit 161).' }}
+          ]
+        }
       ]
     },
     { id:'leg2', emoji:'🌿', color:'#3d6b3d',
       name:'Philadelphia → Madison', subtitle:'Post-Minimoon Drive',
-      dates:'Sat June 13 – Sun June 14, 2026', totalMiles:900, drive:'~13 hrs total',
-      days:[
-        { num:1, date:'Saturday, June 13', from:'Philadelphia, PA', to:'South Bend, IN',
-          miles:575, time:'~9 hrs', route:'I-76 W → I-70 W → I-65 N → US-30 W', stayType:'hotel',
-          hotel:{ name:'Graduate South Bend', icon:'🏈',
-            vibe:'Notre Dame\'s charming college town — walkable, safe, and surprisingly great dining',
-            est:'~$150–200/night', pet:'Dogs welcome · beautiful campus for evening walks',
-            link:'https://www.graduatehotels.com/south-bend/',
-            tip:'Walk the Notre Dame campus after check-in — stunning in June and perfect for a dog walk. Fiddler\'s Hearth Irish pub nearby is a great dinner spot.' }},
-        { num:2, date:'Sunday, June 14', from:'South Bend, IN', to:'Madison, WI',
-          miles:195, time:'~3 hrs', route:'US-31 N → I-90 W',stayType:'family',
-          hotel:{ name:'Staying with family in Madison 🏠', icon:'🦆',
-            vibe:'Arrive fresh and relaxed for your work week on the lakes',
-            est:'No cost', pet:'', link:'',
-            tip:'Short easy drive — enjoy a slow morning in South Bend before heading out. Grab coffee at Rohr\'s in downtown South Bend before hitting the road.' }}
+      dates:'Sat June 13 – Sun June 14, 2026',
+      routes:[
+        { id:'i80chi', label:'I-80 via Chicago', badge:'🎰 Casino in Joliet', miles:880, drive:'~12.5 hrs',
+          via:'I-80 W → Joliet, IL → Madison',
+          days:[
+            { num:1, date:'Saturday, June 13', from:'Philadelphia, PA', to:'Joliet, IL',
+              miles:780, time:'~11 hrs', route:'I-76 W → I-80 W through PA, OH, IN, IL', stayType:'casino',
+              hotel:{ name:'Hollywood Casino Joliet', icon:'🎰',
+                vibe:'Right off I-80 in Joliet — Illinois casino hotel with easy interstate access, no backtracking. Casino, dining, and entertainment all on-site.',
+                est:'~$90–150/night', pet:'Pet-friendly options nearby · confirm at booking',
+                link:'https://www.hollywoodcasinojoliet.com/',
+                tip:'⚠️ Long day (~11 hrs) — pace yourself and stop for lunch in Cleveland (~5.5 hrs) or Toledo (~7 hrs). The payoff: Day 2 is only 100 miles to Madison so you can sleep in and coast in.' }},
+            { num:2, date:'Sunday, June 14', from:'Joliet, IL', to:'Madison, WI',
+              miles:100, time:'~1.5 hrs', route:'I-80 W → I-88 → I-90 → Madison', stayType:'family',
+              hotel:{ name:'Staying with family in Madison 🏠', icon:'🦆',
+                vibe:'Just 100 miles — sleep in, have a real breakfast, and arrive in Madison by noon totally fresh.',
+                est:'No cost', pet:'', link:'',
+                tip:'Easiest Day 2 on any leg. Grab brunch in Joliet and arrive in Madison with the whole afternoon free.' }}
+          ]
+        },
+        { id:'i76sb', label:'Via South Bend', badge:'🎰 Four Winds Casino', miles:770, drive:'~12 hrs',
+          via:'I-76 → South Bend, IN → Madison',
+          days:[
+            { num:1, date:'Saturday, June 13', from:'Philadelphia, PA', to:'South Bend, IN',
+              miles:575, time:'~9 hrs', route:'I-76 W → I-70 W → I-65 N → US-30 W', stayType:'casino',
+              hotel:{ name:'Four Winds Casino Resort', icon:'🎰',
+                vibe:'South Bend\'s own casino resort — right in town, walkable to Notre Dame campus, great dining on-site. Casino-meets-college-town is a fun combo.',
+                est:'~$130–200/night', pet:'Pet-friendly rooms available · confirm at booking',
+                link:'https://www.fourwindscasino.com/southbend/',
+                tip:'Walk the Notre Dame campus with your dog after check-in — stunning in June. Great casino floor for the evening, then an easy 3-hour morning drive to Madison.' }},
+            { num:2, date:'Sunday, June 14', from:'South Bend, IN', to:'Madison, WI',
+              miles:195, time:'~3 hrs', route:'US-31 N → I-90 W', stayType:'family',
+              hotel:{ name:'Staying with family in Madison 🏠', icon:'🦆',
+                vibe:'Arrive fresh and relaxed for your week on the lakes.',
+                est:'No cost', pet:'', link:'',
+                tip:'Short easy drive. Grab coffee at Rohr\'s in downtown South Bend before heading out — great local spot.' }}
+          ]
+        }
       ]
     },
     { id:'leg3', emoji:'🏔️', color:'#a07830',
       name:'Madison → Denver', subtitle:'The Journey Home',
-      dates:'Fri June 19 (or Sat June 20) – Sun June 21, 2026', totalMiles:1100, drive:'~15.5 hrs total',
-      days:[
-        { num:1, date:'Friday June 19 (or Saturday June 20)', from:'Madison, WI', to:'Kearney, NE',
-          miles:530, time:'~8 hrs', route:'I-90 W → I-29 S → I-80 W', stayType:'hotel',
-          hotel:{ name:'Younes Conference Center & Hotel', icon:'🌾',
-            vibe:'Nebraska\'s hidden gem — surprisingly upscale, great Platte River walks for your pup',
-            est:'~$100–140/night', pet:'Pet-friendly rooms available · request at booking',
-            link:'https://www.younescenter.com/',
-            tip:'Kearney is a legitimate surprise — good restaurants, safe, walkable near the river. Backup: Grand Island NE is 20 min east with a great Hampton Inn.' }},
-        { num:2, date:'Saturday June 20 (or Sunday June 21)', from:'Kearney, NE', to:'Denver, CO',
-          miles:350, time:'~5.5 hrs', route:'I-80 W → I-76 W',stayType:'home',
-          hotel:{ name:'Home Sweet Home 🏠', icon:'🏔️',
-            vibe:'Welcome back to the mountains — you\'ve earned it',
-            est:'Free!', pet:'', link:'',
-            tip:'Easy final drive through eastern Colorado. On a clear day you\'ll see the Rockies from I-76 well before Denver. Stop in Fort Morgan for a last coffee.' }}
+      dates:'Fri June 19 (or Sat June 20) – Sun June 21, 2026',
+      routes:[
+        { id:'i80south', label:'I-80 Southern', badge:'🎰 Council Bluffs Return', miles:970, drive:'~14 hrs',
+          via:'I-80 W → Council Bluffs → Denver',
+          days:[
+            { num:1, date:'Friday June 19 (or Saturday June 20)', from:'Madison, WI', to:'Council Bluffs, IA',
+              miles:430, time:'~6.5 hrs', route:'I-39/I-90 S → I-80 W', stayType:'casino',
+              hotel:{ name:'Ameristar Casino Resort Spa', icon:'🎰',
+                vibe:'You\'ll pass right through Council Bluffs on I-80 anyway — a great bookend to the whole trip. Same resort, but now you\'re heading home.',
+                est:'~$100–160/night', pet:'Pet-friendly rooms available · ask at booking',
+                link:'https://www.ameristar.com/council-bluffs.aspx',
+                tip:'Shorter driving day means you can leave Madison mid-morning and arrive with time to relax before the casino floor. Missouri River walk is great for your dog.' }},
+            { num:2, date:'Saturday June 20 (or Sunday June 21)', from:'Council Bluffs, IA', to:'Denver, CO',
+              miles:540, time:'~7.5 hrs', route:'I-80 W → I-76 W into Denver', stayType:'home',
+              hotel:{ name:'Home Sweet Home 🏠', icon:'🏔️',
+                vibe:'Welcome back to the mountains — you\'ve earned every mile.',
+                est:'Free!', pet:'', link:'',
+                tip:'Beautiful drive through western Nebraska. You\'ll see the Rockies from I-76 well before Denver. Stop in Fort Morgan for a last road trip coffee.' }}
+          ]
+        },
+        { id:'i90dead', label:'I-90 via Deadwood', badge:'🎰 Deadwood, SD', miles:1025, drive:'~15 hrs',
+          via:'I-90 W → Deadwood, SD → I-25 S',
+          days:[
+            { num:1, date:'Friday June 19 (or Saturday June 20)', from:'Madison, WI', to:'Deadwood, SD',
+              miles:640, time:'~9 hrs', route:'I-90 W all the way to the Deadwood exit', stayType:'casino',
+              hotel:{ name:'Deadwood Mountain Grand', icon:'🎰',
+                vibe:'Welcome to the Wild West — Deadwood is a full casino destination town with history, character, and more gambling halls than you can count. A bucket-list road trip stop.',
+                est:'~$110–190/night', pet:'Deadwood Gulch Resort is very dog-friendly · multiple pet options in town',
+                link:'https://www.deadwoodmountaingrand.com/',
+                tip:'Deadwood is special — Kevin Costner\'s Tatanka, Wild Bill Hickok\'s grave at Mount Moriah Cemetery, dozens of historic casinos, and the Black Hills right outside. 30 min to Mount Rushmore if you want a morning detour before Denver.' }},
+            { num:2, date:'Saturday June 20 (or Sunday June 21)', from:'Deadwood, SD', to:'Denver, CO',
+              miles:385, time:'~5.5 hrs', route:'US-85 S → I-25 S into Denver', stayType:'home',
+              hotel:{ name:'Home Sweet Home 🏠', icon:'🏔️',
+                vibe:'Epic final leg — down through Wyoming along the Front Range with the Rockies in view the whole way.',
+                est:'Free!', pet:'', link:'',
+                tip:'US-85 through Wyoming is gorgeous and lightly trafficked. Stop in Cheyenne for lunch (~2.5 hrs from Deadwood). The final stretch on I-25 into Denver is one of the best drives in America.' }}
+          ]
+        }
       ]
     }
   ]
@@ -912,7 +1162,8 @@ const PHOTOS = {
 let S = {
   mode:'demo', currentUser:null, bookings:{}, custom:{},
   tab:'dashboard', day:0, sugTab:'dining',
-  editMode:false, db:null, auth:null, unsub:null
+  editMode:false, db:null, auth:null, unsub:null,
+  rtRoutes:{ leg1:0, leg2:0, leg3:0 }
 };
 
 // ===========================
@@ -1095,6 +1346,7 @@ function navigate(tab) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   $('page-'+tab).classList.add('active');
   $('nav-'+tab).classList.add('active');
+  if (tab==='roadtrip') { closeRtStop(); setTimeout(initRtMap, 80); }
 }
 
 function showScreen(id) {
@@ -1618,76 +1870,188 @@ function showToast(msg) {
 }
 
 // ===========================
+//  MAP FUNCTIONS
+// ===========================
+let rtMapInst = null;
+
+function initRtMap() {
+  if (!window.L) return;
+  if (rtMapInst) { rtMapInst.invalidateSize(); return; }
+  const el = $('rt-map');
+  if (!el) return;
+  rtMapInst = L.map('rt-map', { scrollWheelZoom:false, tap:false, attributionControl:false })
+    .setView([41.8, -95], 4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { maxZoom:18, attribution:'© OpenStreetMap' }).addTo(rtMapInst);
+  // Draw route lines
+  RT_ROUTE_LINES.forEach(r => {
+    L.polyline(r.coords, { color:r.color, weight:3.5, opacity:.7,
+      dashArray:r.dashArray||null }).addTo(rtMapInst);
+  });
+  // Draw stop markers
+  const legColor = { leg1:'#2d4070', leg2:'#3d6b3d', leg3:'#a07830' };
+  RT_STOPS.forEach(stop => {
+    const isCasino = stop.tag==='casino';
+    const isEndpoint = stop.tag==='home'||stop.tag==='family';
+    const color = isCasino ? '#D97706' : isEndpoint ? '#6B9E6B' :
+      legColor[stop.legs[0]] || '#2d4070';
+    const marker = L.circleMarker([stop.lat, stop.lng], {
+      radius: isEndpoint ? 7 : isCasino ? 10 : 8,
+      fillColor: color, color:'#fff', weight:2, fillOpacity:0.92
+    }).addTo(rtMapInst);
+    marker.bindTooltip(`<b>${stop.city}</b>${isCasino?' 🎰':''}`,
+      { direction:'top', offset:L.point(0,-4), className:'rt-map-tip' });
+    if (!isEndpoint) marker.on('click', () => showRtStop(stop.id));
+  });
+  // Legend
+  const legend = L.control({ position:'bottomright' });
+  legend.onAdd = () => {
+    const d = L.DomUtil.create('div');
+    d.style.cssText = 'background:#ffffffee;padding:6px 10px;border-radius:8px;font-size:.68rem;line-height:1.8;box-shadow:0 2px 8px rgba(0,0,0,.15)';
+    d.innerHTML = '<b style="font-size:.7rem">Legs</b><br>'+
+      '<span style="color:#2d4070">●</span> Denver → Philly<br>'+
+      '<span style="color:#3d6b3d">●</span> Philly → Madison<br>'+
+      '<span style="color:#a07830">●</span> Madison → Denver<br>'+
+      '<span style="color:#D97706">●</span> Casino stop';
+    return d;
+  };
+  legend.addTo(rtMapInst);
+}
+
+function showRtStop(stopId) {
+  const stop = RT_STOPS.find(s => s.id === stopId);
+  if (!stop) return;
+  const tagColors = { casino:'#D97706', city:'#2d4070', friends:'#3d6b3d', family:'#3d6b3d', stop:'#8a8a8a', home:'#8a8a8a' };
+  const tagLabels = { casino:'🎰 Casino Stop', city:'🏙️ City Stop', friends:'👥 See Friends', stop:'🛑 Rest Stop' };
+  const hotelHTML = stop.hotels.length ? stop.hotels.map(h=>`
+    <div class="rt-hotel-card" style="margin-bottom:10px">
+      <div class="rt-hotel-header">
+        <div class="rt-hotel-icon">${h.casino?'🎰':'🏨'}</div>
+        <div>
+          <div class="rt-hotel-name">${h.name}</div>
+          <div class="rt-hotel-vibe">${h.note}</div>
+        </div>
+      </div>
+      <div class="rt-hotel-footer">
+        <span class="rt-hotel-est">${h.price}</span>
+        <span class="rt-hotel-pet">${h.pet}</span>
+        ${h.link?`<a href="${h.link}" target="_blank" class="rt-hotel-link">Book →</a>`:''}
+      </div>
+    </div>`).join('') :
+    `<div style="text-align:center;color:var(--text-muted);font-size:.82rem;padding:10px 0">Home base — no hotel needed 🏠</div>`;
+  $('rt-stop-content').innerHTML = `
+    <div class="rt-sp-city">${stop.city}</div>
+    ${stop.dist?`<div class="rt-sp-dist">📍 ${stop.dist}</div>`:''}
+    ${tagLabels[stop.tag]?`<span class="rt-sp-tag" style="background:${tagColors[stop.tag]}18;color:${tagColors[stop.tag]};border:1px solid ${tagColors[stop.tag]}40">${tagLabels[stop.tag]}</span>`:''}
+    <div class="rt-sp-why">${stop.why}</div>
+    ${stop.hotels.length?'<div class="rt-sp-hotel-lbl">Hotel Options</div>':''}
+    ${hotelHTML}`;
+  $('rt-stop-panel').classList.add('open');
+}
+
+function closeRtStop() {
+  const p = $('rt-stop-panel');
+  if (p) p.classList.remove('open');
+}
+
+// ===========================
 //  ROAD TRIP
 // ===========================
+function buildRtDaysHTML(leg, route) {
+  const tagMap={hotel:'🏨 Hotel',casino:'🎰 Casino Stay',friends:'🏠 Friends',family:'🏠 Family',home:'🏡 Home'};
+  return route.days.map(d=>{
+    const h=d.hotel;
+    const linkEl=h.link?`<a href="${h.link}" target="_blank" class="rt-hotel-link">Book →</a>`:'';
+    const petEl=h.pet?`<span class="rt-hotel-pet">🐾 ${h.pet}</span>`:'';
+    const tipEl=h.tip?`<div class="rt-hotel-tip">💡 ${h.tip}</div>`:'';
+    return `<div class="rt-day-card">
+      <div class="rt-day-header">
+        <div class="rt-day-badge" style="background:${leg.color}">D${d.num}</div>
+        <div style="flex:1">
+          <div class="rt-day-title">${d.from} → ${d.to}</div>
+          <div class="rt-day-date">${d.date}</div>
+        </div>
+      </div>
+      <div class="rt-day-route">
+        <strong>${d.miles} miles</strong> · ${d.time} · <span>${d.route}</span>
+      </div>
+      <div class="rt-hotel-card">
+        <div class="rt-hotel-header">
+          <div class="rt-hotel-icon">${h.icon}</div>
+          <div>
+            <div class="rt-hotel-name">${h.name}</div>
+            <div class="rt-hotel-vibe">${h.vibe}</div>
+          </div>
+        </div>
+        <div class="rt-hotel-footer">
+          <span class="rt-hotel-est">${h.est}</span>
+          ${petEl}${linkEl}
+        </div>
+        ${tipEl}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildRtVizHTML(leg, route) {
+  const tagMap={hotel:'🏨 Hotel',casino:'🎰 Casino',friends:'🏠 Friends',family:'🏠 Family',home:'🏡 Home'};
+  const nodes=[];
+  route.days.forEach((d,i)=>{
+    if (i===0) {
+      const [city,st]=d.from.split(', ');
+      nodes.push(`<div class="rt-stop-node">
+        <div class="rt-dot home" style="background:${leg.color}"></div>
+        <div class="rt-city">${city}</div><div class="rt-city-state">${st}</div>
+      </div>`);
+    }
+    nodes.push(`<div class="rt-connector">
+      <div class="rt-connector-info">${d.miles}mi</div>
+      <div class="rt-connector-line" style="border-color:${leg.color}55"></div>
+      <div class="rt-connector-info">${d.time}</div>
+    </div>`);
+    const [city,st]=d.to.split(', ');
+    nodes.push(`<div class="rt-stop-node">
+      <div class="rt-dot ${d.stayType}" style="background:${d.stayType==='casino'?'#D97706':leg.color}"></div>
+      <div class="rt-city">${city}</div><div class="rt-city-state">${st}</div>
+      <div class="rt-city-tag ${d.stayType}">${tagMap[d.stayType]||''}</div>
+    </div>`);
+  });
+  return nodes.join('');
+}
+
+function buildRtLegBodyHTML(leg, li) {
+  if (!S.rtRoutes) S.rtRoutes={leg1:0,leg2:0,leg3:0};
+  const ri=S.rtRoutes[leg.id]||0;
+  const route=leg.routes[ri];
+  const tabsHTML=leg.routes.map((r,idx)=>`
+    <button class="rt-route-tab${idx===ri?' active':''}" onclick="setRtRoute(${li},${idx})">
+      ${r.label} <span class="rt-casino-badge">${r.badge}</span>
+    </button>`).join('');
+  const compareHTML=`<div class="rt-route-compare">
+    <div class="rt-compare-item"><strong>${route.miles.toLocaleString()} miles</strong><span>Total distance</span></div>
+    <div class="rt-compare-item"><strong>${route.drive}</strong><span>Driving time</span></div>
+    <div class="rt-compare-item"><strong>${route.via}</strong><span>Via</span></div>
+    <div class="rt-compare-item"><strong>${route.badge}</strong><span>Casino stops</span></div>
+  </div>`;
+  return `<div class="rt-route-tabs">${tabsHTML}</div>
+    ${compareHTML}
+    <div class="rt-route-viz">${buildRtVizHTML(leg,route)}</div>
+    ${buildRtDaysHTML(leg,route)}`;
+}
+
 function renderRoadTrip() {
   const el=$('roadtrip-container');
   if (!el) return;
-
-  const totalMiles=ROAD_TRIP.legs.reduce((s,l)=>s+l.totalMiles,0);
-
-  const legsHTML=ROAD_TRIP.legs.map((leg,li)=>{
-    // Route visualization
-    const nodes=[];
-    leg.days.forEach((d,i)=>{
-      if (i===0) {
-        const [city,st]=d.from.split(', ');
-        nodes.push(`<div class="rt-stop-node">
-          <div class="rt-dot home" style="background:${leg.color}"></div>
-          <div class="rt-city">${city}</div>
-          <div class="rt-city-state">${st}</div>
-        </div>`);
-      }
-      nodes.push(`<div class="rt-connector">
-        <div class="rt-connector-info">${d.miles}mi</div>
-        <div class="rt-connector-line" style="border-color:${leg.color}55"></div>
-        <div class="rt-connector-info">${d.time}</div>
-      </div>`);
-      const [city,st]=d.to.split(', ');
-      const tagMap={hotel:'🏨 Hotel',friends:'🏠 Friends',family:'🏠 Family',home:'🏡 Home'};
-      nodes.push(`<div class="rt-stop-node">
-        <div class="rt-dot ${d.stayType}" style="background:${leg.color}"></div>
-        <div class="rt-city">${city}</div>
-        <div class="rt-city-state">${st}</div>
-        <div class="rt-city-tag ${d.stayType}">${tagMap[d.stayType]||''}</div>
-      </div>`);
-    });
-
-    // Day cards
-    const daysHTML=leg.days.map(d=>{
-      const h=d.hotel;
-      const linkEl=h.link?`<a href="${h.link}" target="_blank" class="rt-hotel-link">Book →</a>`:'';
-      const petEl=h.pet?`<span class="rt-hotel-pet">🐾 ${h.pet}</span>`:'';
-      const tipEl=h.tip?`<div class="rt-hotel-tip">💡 ${h.tip}</div>`:'';
-      return `<div class="rt-day-card">
-        <div class="rt-day-header">
-          <div class="rt-day-badge" style="background:${leg.color}">D${d.num}</div>
-          <div style="flex:1">
-            <div class="rt-day-title">${d.from} → ${d.to}</div>
-            <div class="rt-day-date">${d.date}</div>
-          </div>
-        </div>
-        <div class="rt-day-route">
-          <strong>${d.miles} miles</strong> · ${d.time} · <span>${d.route}</span>
-        </div>
-        <div class="rt-hotel-card">
-          <div class="rt-hotel-header">
-            <div class="rt-hotel-icon">${h.icon}</div>
-            <div>
-              <div class="rt-hotel-name">${h.name}</div>
-              <div class="rt-hotel-vibe">${h.vibe}</div>
-            </div>
-          </div>
-          <div class="rt-hotel-footer">
-            <span class="rt-hotel-est">${h.est}</span>
-            ${petEl}${linkEl}
-          </div>
-          ${tipEl}
-        </div>
-      </div>`;
-    }).join('');
-
-    return `<div class="rt-leg" id="rt-leg-${li}">
+  const casinoCount=ROAD_TRIP.legs.reduce((n,l)=>{
+    const ri=(S.rtRoutes&&S.rtRoutes[l.id])||0;
+    return n+(l.routes[ri].days.filter(d=>d.stayType==='casino').length);
+  },0);
+  const totalMiles=ROAD_TRIP.legs.reduce((s,l)=>{
+    const ri=(S.rtRoutes&&S.rtRoutes[l.id])||0;
+    return s+l.routes[ri].miles;
+  },0);
+  const legsHTML=ROAD_TRIP.legs.map((leg,li)=>`
+    <div class="rt-leg" id="rt-leg-${li}">
       <div class="rt-leg-header" onclick="toggleRtLeg(${li})">
         <div class="rt-leg-icon">${leg.emoji}</div>
         <div class="rt-leg-info">
@@ -1695,34 +2059,51 @@ function renderRoadTrip() {
           <div class="rt-leg-sub">${leg.subtitle}</div>
           <div class="rt-leg-meta">
             <span class="rt-leg-pill">📅 ${leg.dates}</span>
-            <span class="rt-leg-pill">🛣️ ${leg.totalMiles.toLocaleString()} miles</span>
-            <span class="rt-leg-pill">⏱️ ${leg.drive}</span>
+            <span class="rt-leg-pill">🛣️ ${leg.routes[(S.rtRoutes&&S.rtRoutes[leg.id])||0].miles.toLocaleString()} mi</span>
+            <span class="rt-leg-pill">⏱️ ${leg.routes[(S.rtRoutes&&S.rtRoutes[leg.id])||0].drive}</span>
           </div>
         </div>
         <div class="rt-leg-chevron" id="rt-chev-${li}">▾</div>
       </div>
       <div class="rt-leg-body" id="rt-body-${li}">
-        <div class="rt-route-viz">${nodes.join('')}</div>
-        ${daysHTML}
+        ${buildRtLegBodyHTML(leg,li)}
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 
   el.innerHTML=`
     <div class="rt-hero">
-      <div class="rt-hero-label">🐾 Pet-Friendly Road Trip Guide</div>
+      <div class="rt-hero-label">🐾 Pet-Friendly · Flexible Stops · Casino Pins</div>
       <div class="rt-hero-title">Denver ↔ Philadelphia ↔ Madison</div>
       <div class="rt-stats">
-        <div class="rt-stat"><div class="rt-stat-num">3</div><div class="rt-stat-lbl">Trip Legs</div></div>
-        <div class="rt-stat"><div class="rt-stat-num">${totalMiles.toLocaleString()}</div><div class="rt-stat-lbl">Total Miles</div></div>
-        <div class="rt-stat"><div class="rt-stat-num">4</div><div class="rt-stat-lbl">Hotel Nights</div></div>
-        <div class="rt-stat"><div class="rt-stat-num">~55h</div><div class="rt-stat-lbl">Total Drive</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">3</div><div class="rt-stat-lbl">Legs</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">${totalMiles.toLocaleString()}</div><div class="rt-stat-lbl">Miles</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">${casinoCount}+</div><div class="rt-stat-lbl">Casino Stops</div></div>
+        <div class="rt-stat"><div class="rt-stat-num">${RT_STOPS.filter(s=>s.hotels.length).length}</div><div class="rt-stat-lbl">Stop Options</div></div>
       </div>
     </div>
-    <div style="background:var(--sage-light);border:1px solid #a8d5a8;border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#3d6b3d;line-height:1.5">
-      🗺️ <strong>Route strategy:</strong> All legs use major interstates (I-70, I-76, I-80, I-90) for reliability and services. Hotels below are curated for your small dog — pet-friendly confirmed. Tap any leg to expand the full day-by-day plan.
+    <div style="background:var(--ivory);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:var(--text-muted);line-height:1.55">
+      🗺️ Tap any <strong style="color:#D97706">🎰 amber pin</strong> on the map for a casino stop, or any <strong style="color:var(--navy)">blue pin</strong> for a hotel/city stop. Every pin has 2 pet-friendly hotel options — you decide where to stay based on how you're feeling that day. Route breakdown with dual options is below.
     </div>
+    <div class="rt-leg-section-hdr">Route Breakdown — Choose Your Stops</div>
     ${legsHTML}`;
+}
+
+function setRtRoute(legIdx, routeIdx) {
+  const leg=ROAD_TRIP.legs[legIdx];
+  if (!leg) return;
+  if (!S.rtRoutes) S.rtRoutes={leg1:0,leg2:0,leg3:0};
+  S.rtRoutes[leg.id]=routeIdx;
+  // Re-render this leg's body and header pills
+  const bodyEl=$('rt-body-'+legIdx);
+  if (bodyEl) bodyEl.innerHTML=buildRtLegBodyHTML(leg,legIdx);
+  // Update the header mileage/drive pills
+  const legEl=$('rt-leg-'+legIdx);
+  if (legEl) {
+    const route=leg.routes[routeIdx];
+    const pills=legEl.querySelectorAll('.rt-leg-pill');
+    if (pills[1]) pills[1].textContent='🛣️ '+route.miles.toLocaleString()+' mi';
+    if (pills[2]) pills[2].textContent='⏱️ '+route.drive;
+  }
 }
 
 function toggleRtLeg(i) {
